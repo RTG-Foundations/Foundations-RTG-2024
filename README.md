@@ -21,7 +21,7 @@ We recommend to use Visual Studio Community for viewing, editing, running and de
 
 1. Run Visual Studio Community.
 2. Click "Clone a repository". ![Visual Studio Startup](./docs/images/visual-studio-clone-a-repository.png)
-3. Enter the link: `git@github.com:NMSU-Department-of-Mathematics/Foundations-RTG-2024.git`. You may also choose a path on your computer where the folder with the project is created. Click "Clone". ![Visual Studio Clone Dialog](./docs/images/visual-studio-github-link.png)
+3. Enter the link: `git@github.com:RTG-Foundations/Foundations-RTG-2024.git`. You may also choose a path on your computer where the folder with the project is created. Click "Clone". ![Visual Studio Clone Dialog](./docs/images/visual-studio-github-link.png)
 4. The project will open in a new window.
 
 ## Set up a virtual environment.
