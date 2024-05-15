@@ -1,0 +1,2 @@
+networkx==3.2.1
+vpython==7.6.5
