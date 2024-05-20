@@ -1,10 +1,10 @@
 # Quick Start Guide
 ## Install Python 3.9
-1. Download the Python 3.9 installer from https://www.python.org/downloads/release/python-3913/.
+1. Open https://www.python.org/downloads/release/python-3913/. Scroll down to "Files" and click the download link that corresponds to your operating system. If you are using Windows ![Python Website](./docs/img/python-website.png)
 2. Check "Add Python 3.9 to PATH". Click "Install Now". ![Python Installer](./docs/images/python-installer.png)
 
 > [!CAUTION]
-> There are known compatibility issues with the Python libraries that we use in this project. If you have an installation of any version of Python other than 3.9, we strongly recommend installing Python 3.9 in parallel. In Visual Studio you will be able to choose the version of Python to run the code.
+> There are known compatibility issues with Python libraries. If you have an installation of any version of Python other than 3.9, we strongly recommend installing Python 3.9 in parallel. In Visual Studio you will be able to choose the version of Python to run the code.
 
 
 ## Install Visual Studio Community
