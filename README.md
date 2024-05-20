@@ -17,6 +17,21 @@ We recommend to use Visual Studio Community for viewing, editing, running and de
 4. Wait until Visual Studio is installed. After the setup, Visual Studio will launch automatically.
 5. You may skip the sign-in screen. In the startup menu, select "General" for "Development settings".
 
+
+## Add an access key in your GitHub account
+
+1. Open GitHub and click on the top right round icon. In the menu, open "Settings". ![Github Menu](./docs/images/github-menu.png)
+2. In Settings, open "SSH and GPG keys". Check if you already have an SSH key for the computer that you are working on now. If you have already cloned any GitHub projects on this computer, most likely you have an SSH key. If you have an SSH key, go to the next section. Otherwise, you will need to create it.
+3. To create a key, click the "New SSH Key" button.
+4. Generate an SSH key using the `ssh-keygen` command. On Windows, press `Win+R` and type `ssh-keygen` in the window (you can just copy the command from here). Click "OK". ![ssh-keygen](./docs/images/ssh-keygen.png)
+5. You will see a window like this: ![ssh-keygen-window](./docs/images/ssh-keygen-window.png)
+Copy the path to the id_rsa file. For example, on the screenshot it is `C:\Users\vnvdv/.ssh`. Most likely, the path will be `C:\Users\<login of your Windows account>/.ssh`. You don't need the part after the last slash. Press Enter several times until the window closes.
+6. Open the folder with the path that you copied on the previous step. It will contain several files. We need `id_rsa.pub`. ![id_rsa.pub](./docs/images/id_rsa_pub.png)
+7. Open `id_rsa.pub` using Notepad or any plain text editor.  It will contain a sequence of letters and numbers starting with `ssh-rsa`. Copy all text from this file. ![ssh-rsa](./docs/images/ssh-rsa.png)
+8. Insert the text from `id_rsa.pub` into the "Key" field on the GitHub page that you opened. Write any name for the key. Click "Add SSH key". ![GitHub new key](./docs/images/github-new-key.png)
+9. You will see your new key in the list. Now you are ready to clone out project.
+
+
 ## Clone the project from GitHub
 
 1. Run Visual Studio Community.
