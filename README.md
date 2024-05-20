@@ -21,7 +21,7 @@ We recommend to use Visual Studio Community for viewing, editing, running and de
 ## Add an access key in your GitHub account
 
 1. Open GitHub and click on the top right round icon. In the menu, open "Settings". ![Github Menu](./docs/images/github-menu.png)
-2. In Settings, open "SSH and GPG keys". Check if you already have an SSH key for the computer that you are working on now. If you have already cloned any GitHub projects on this computer, most likely you have an SSH key. If you have an SSH key, go to the next section. Otherwise, you will need to create it.
+2. In Settings, open "SSH and GPG keys". Check if you already have an SSH key for the computer that you are working on now. If you have already cloned any GitHub projects on this computer, most likely you have an SSH key. If you have an SSH key, go to the next section. Otherwise, you will need to create it. ![SSH keys](github-keys.png)
 3. To create a key, click the "New SSH Key" button.
 4. Generate an SSH key using the `ssh-keygen` command. On Windows, press `Win+R` and type `ssh-keygen` in the window (you can just copy the command from here). Click "OK". ![ssh-keygen](./docs/images/ssh-keygen.png)
 5. You will see a window like this: ![ssh-keygen-window](./docs/images/ssh-keygen-window.png)
