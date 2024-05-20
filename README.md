@@ -1,6 +1,6 @@
 # Quick Start Guide
 ## Install Python 3.9
-1. Open https://www.python.org/downloads/release/python-3913/. Scroll down to "Files" and click the download link that corresponds to your operating system. If you are using Windows ![Python Website](./docs/img/python-website.png)
+1. Open https://www.python.org/downloads/release/python-3913/. Scroll down to "Files" and click the download link that corresponds to your operating system. If you are using Windows, most likely it will be "Windows installer (64-bit)" ![Python Website](./docs/images/python-website.png)
 2. Check "Add Python 3.9 to PATH". Click "Install Now". ![Python Installer](./docs/images/python-installer.png)
 
 > [!CAUTION]
