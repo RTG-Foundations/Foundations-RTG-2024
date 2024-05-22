@@ -2,6 +2,10 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from collections import deque
+
+
+
 ''' 
     Displays 3D graph. Modified to work with matplotlib
 '''
@@ -122,6 +126,66 @@ def transitive_closure(n, R):
     return R_prime
 
 
+'''
+    Input: a positive integer n; a relation R on Xn
+    Output: the connected components of (Xn, R U R^-1)
+'''
+def find_connected_components(n, R):
+    
+    # Write the graph as dictionary,  
+    # where each key is a node, and each 
+    # value is an array of neighbors
+    graph = {}
+    
+    for i in range(n):
+        graph[i] = []
+
+    for (a, b) in R:
+        graph[a].append(b)  # R
+        graph[b].append(a)  # R^-1 
+
+    # set for tracking visited nodes
+    visited = set() 
+
+    # array of sets for tracking connected components
+    components = []
+
+    # Find all connected components using BFS
+    for node in range(1, n):
+        if node not in visited:
+            result =  bfs(graph, node)
+            for node in result:
+                visited.add(node)
+            components.append(result)
+    
+    return components
+
+
+'''
+    Helper method to perform BFS to find all nodes 
+    in same connected component
+'''
+def bfs(graph, start_node):
+    # set for tracking visited nodes
+    visited = set()
+
+    # queue to track the nodes to explore
+    # add start node to the queue
+    queue = deque([start_node])
+    
+    while queue:
+        # dequeue front node
+        node = queue.popleft()
+        if node not in visited:
+            # add current node to visted array
+            visited.add(node)
+
+            # Add neighbors to the queue
+            neighbors = graph[node]
+            queue.extend(neighbors)
+    
+    return visited
+
 
 def main():
 
@@ -132,7 +196,7 @@ def main():
     R = {(0, 1), (1, 2), (2, 0), (3,2)}
     print(f"R: {R}\n")
 
-
+   
     # Reflexive test
     R_reflex = reflexive_closure(n, R)
     # R + {(0,0), (1,1), (2,2), (3,3)}
@@ -147,15 +211,24 @@ def main():
 
     # Transitive test
     R_trans = transitive_closure(n, R)
-    # R + {(0,2), (3,0), (1,0), (2,1)}
+    # R + R^2 + ... + R^(n-1)
     print(f"Transitive closure of R: {R_trans}\n")
 
    
+    # Connected components
+    n2 = 7
+    R2 = {(0, 4), (4, 2), (2, 3), (5,1), (6,6)}
+    print(f"R: {R2}\n")
+    components = find_connected_components(n2, R2)
+    for idx, component in enumerate(components):
+        print(f"Component {idx + 1}: {component}")
+
    
     '''
-        Create graphs
+        Create graph for closures
     '''
 
+    
     graph_R = nx.DiGraph()
     for (x, y) in R:
         graph_R.add_edge(x, y)
@@ -197,7 +270,7 @@ def main():
     plt.suptitle("Red = irreflexive, Blue = reflexive")
     plt.show()
 
-
+   
 if __name__ == "__main__":
     main()
 
