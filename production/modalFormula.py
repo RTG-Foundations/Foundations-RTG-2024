@@ -1,18 +1,27 @@
 '''
-Let A = {(,), ⊥, →, ♢, p0, p1, . . .} be a set. By A∗ we denote the set of finite
-sequences of elements of A.
+Let A = {(,), ⊥, →, ♢, p0, p1, . . .} be a set.
+By A∗ we denote the set of finite sequences of elements of A.
 
-This program decides if s ∈ A∗ is a modal formula, using the following syntax for
-modal formulas:
+This program decides if s ∈ A∗ is a modal formula, using 
+the following syntax for modal formulas:
 
 <expr> = <term> --> <expr>
-	| <term>
+	    | <term>
 
 <term> = '('<expr>')'
-	| ♢<expr>
+	| '♢''('<expr>')'
 	| <var>
 	
 <var> =  ⊥ | p0 | p2 
+
+* This grammer uses right-associativity, so p0 --> p1 --> p2 is parsed p0 --> (p1 --> p2)
+
+If the formula is valid,  returns an ordered set (ψ1, . . . , ψk) 
+of all subformulas of s such that if ψi is a subformula
+of ψj , then i < j.
+
+
+
 '''
 
 import re
@@ -58,37 +67,60 @@ class Tokenizer:
         raise ValueError("Invalid token at position {}".format(self.index))
 
 class Parser:
+    num_paren = 0
+    num_implic = 0
+
     def __init__(self, tokens):
         self.tokens = tokens
         self.index = 0
+        self.subformulas = []
+        self.numImplic = 0
+        self.numParen = 0
 
     def parse(self):
         try:
             self.expr()
-            return self.match('END_OF_INPUT')
+            if self.match('END_OF_INPUT'):
+                return self.subformulas
+            else:
+                return None
         except ValueError as e:
             print(e)
-            return False
+            return None
 
     '''
         <expr> = <term> --> <expr> | <term>
+                        
     '''
     def expr(self):
-        self.term()
-        while self.match('T_IMPLICATION'):
+       
+            start = self.index
             self.term()
+            if self.match('T_IMPLICATION'):
+                self.term()
+            end = self.index
+            self.add_subformula(start, end)
+
+     
 
     '''
-        <term> = '('<expr>')' | ♢<expr> | <var>
+        <term> = '('<expr>')' | '♢('<expr>')' | <var>
     '''
     def term(self):
+        start = self.index
         if self.match('T_LEFTPAREN'):
             self.expr()
             self.expect('T_RIGHTPAREN')
         elif self.match('T_BOX'):
+            self.expect('T_LEFTPAREN')
             self.expr()
+            self.expect('T_RIGHTPAREN')
         else:
             self.var()
+        end = self.index
+        self.add_subformula(start, end)
+
+
 
     '''
         <var>  =  ⊥ | p0 | p1 | ... 
@@ -109,22 +141,39 @@ class Parser:
         if not self.match(token_type):
             raise ValueError("Expected {} at position {}".format(token_type, self.tokens[self.index].position))
 
-def is_valid_expression(input_str):
+    def add_subformula(self, start_index, end_index):
+        subformula_tokens = self.tokens[start_index:end_index]
+        subformula_str = ''.join(token.value for token in subformula_tokens if token.value)
+        if subformula_str not in self.subformulas:
+            self.subformulas.append(subformula_str)
+
+def find_subformulas(input_str):
     input_str = input_str.replace(' ', '')  # Remove all spaces
     tokens = Tokenizer(input_str).tokenize()
     parser = Parser(tokens)
-    return parser.parse()
+    subformulas = parser.parse()
+    return subformulas if subformulas else False
+
 
 # Examples
-expression = 'p0 --> p2'
-print(f"{expression} : {is_valid_expression(expression)}")  
+expression = 'p0 --> p2 --> ♢(p3)'
+print(f"{expression}\n{find_subformulas(expression)}\n")  
+expression = '(p0 --> p2) --> p3'
+print(f"{expression}\n{find_subformulas(expression)}\n")  
+expression = 'p0 --> (p2 --> p3)'
+print(f"{expression}\n{find_subformulas(expression)}\n")  
+expression = '(p0 --> p2) --> (♢(p3) --> p4)'
+
+print(f"{expression}\n{find_subformulas(expression)}\n")  
 expression = '♢(⊥ --> ⊥)'
-print(f"{expression} : {is_valid_expression(expression)}")  
+print(f"{expression}\n{find_subformulas(expression)}\n") 
 expression = '♢(p0) --> ♢p2'
-print(f"{expression} : {is_valid_expression(expression)}")   
+print(f"{expression}\n{find_subformulas(expression)}\n")  
 expression = 'p0 p2'
-print(f"{expression} : {is_valid_expression(expression)}") 
-expression = '♢♢♢((p0))'
-print(f"{expression} : {is_valid_expression(expression)}")  
-expression = 'p0 --> ♢♢p2 --> ⊥'
-print(f"{expression} : {is_valid_expression(expression)}") 
+print(f"{expression}\n{find_subformulas(expression)}\n") 
+expression = '♢(♢(♢((p0))))'
+print(f"{expression}\n{find_subformulas(expression)}\n")  
+expression = 'p0 --> ♢(♢(p2)) --> ⊥' # p0 --> (♢♢p2 --> ⊥)
+print(f"{expression}\n{find_subformulas(expression)}\n") 
+expression = '(p0 --> ♢(♢(p2))) --> ⊥' 
+print(f"{expression}\n{find_subformulas(expression)}\n") 
