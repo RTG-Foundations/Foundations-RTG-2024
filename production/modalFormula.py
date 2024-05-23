@@ -5,7 +5,7 @@ By A∗ we denote the set of finite sequences of elements of A.
 This program decides if s ∈ A∗ is a modal formula, using 
 the following syntax for modal formulas:
 
-<expr> = <term> --> <expr>
+<expr> = <term> --> <term>
 	    | <term>
 
 <term> = '('<expr>')'
@@ -74,8 +74,6 @@ class Parser:
         self.tokens = tokens
         self.index = 0
         self.subformulas = []
-        self.numImplic = 0
-        self.numParen = 0
 
     def parse(self):
         try:
@@ -89,7 +87,7 @@ class Parser:
             return None
 
     '''
-        <expr> = <term> --> <expr> | <term>
+        <expr> = <term> --> <term> | <term>
                         
     '''
     def expr(self):
