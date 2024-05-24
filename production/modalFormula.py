@@ -25,16 +25,30 @@ of ψj , then i < j.
 '''
 
 import re
+from itertools import product
 
 # Token types
 TOKEN_TYPE_MAP = {
     'T_PROPOSITION': r"p\d+",
     'T_FALSITY': '⊥',
-    'T_BOX': '♢',
+    'T_DIAMOND': '♢',
     'T_LEFTPAREN': r'\(',
     'T_RIGHTPAREN': r'\)',
     'T_IMPLICATION': r'-->',
 }
+
+# Abstract Syntax Tree Node Types
+A_PROPOSITION = 'PROPOSITION'
+A_FALSITY = 'FALSITY'
+A_IMPLICATION = 'IMPLICATION'
+A_DIAMOND = 'DIAMOND'
+
+class ASTNode:
+    def __init__(self, node_type, value=None):
+        self.type = node_type
+        self.value = value
+        self.s1 = None
+        self.s2 = None
 
 class Token:
     def __init__(self, token_type, value=None, position=None):
@@ -44,6 +58,7 @@ class Token:
 
 class Tokenizer:
     def __init__(self, input_str):
+        input_str = input_str.replace(' ', '')  # Remove all spaces
         self.input = input_str
         self.index = 0
 
@@ -64,22 +79,20 @@ class Tokenizer:
                 token = Token(token_type, value, self.index)
                 self.index += len(value)
                 return token
-        raise ValueError("Invalid token at position {}".format(self.index))
+        raise ValueError(f"Invalid token {self.input[self.index]} at position {self.index}")
 
 class Parser:
-    num_paren = 0
-    num_implic = 0
-
     def __init__(self, tokens):
         self.tokens = tokens
         self.index = 0
+        
+    def parse(self):
         self.subformulas = []
 
-    def parse(self):
         try:
-            self.expr()
+            ast = self.expr()
             if self.match('END_OF_INPUT'):
-                return self.subformulas
+                return ast, self.subformulas
             else:
                 return None
         except ValueError as e:
@@ -91,13 +104,22 @@ class Parser:
                         
     '''
     def expr(self):
-       
+            
             start = self.index
-            self.term()
-            if self.match('T_IMPLICATION'):
-                self.term()
+            s1 = self.term()
+            if self.match('T_IMPLICATION'): # implication
+                s2 = self.term()
+                
+                root = ASTNode(A_IMPLICATION)
+                root.s1 = s1
+                root.s2 = s2
+            else: # not implication. Return s1
+                root = s1
+            
             end = self.index
             self.add_subformula(start, end)
+
+            return root
 
      
 
@@ -106,17 +128,21 @@ class Parser:
     '''
     def term(self):
         start = self.index
+
         if self.match('T_LEFTPAREN'):
-            self.expr()
+            root = self.expr()
             self.expect('T_RIGHTPAREN')
-        elif self.match('T_BOX'):
+        elif self.match('T_DIAMOND'):
+            root = ASTNode(A_DIAMOND)
             self.expect('T_LEFTPAREN')
-            self.expr()
+            root.s1 = self.expr()
             self.expect('T_RIGHTPAREN')
         else:
-            self.var()
+            root = self.var()
         end = self.index
         self.add_subformula(start, end)
+
+        return root
 
 
 
@@ -125,9 +151,15 @@ class Parser:
     '''
     def var(self):
         token = self.tokens[self.index]
-        if token.type not in ['T_FALSITY', 'T_PROPOSITION']:
+        if token.type == 'T_FALSITY':
+            root = ASTNode(A_FALSITY)
+        elif token.type == 'T_PROPOSITION':
+            root = ASTNode(A_PROPOSITION, token.value)
+        else:
             raise ValueError("Expected variable at position {}".format(token.position))
+            
         self.index += 1
+        return root
 
     def match(self, token_type):
         if self.tokens[self.index].type == token_type:
@@ -142,18 +174,82 @@ class Parser:
     def add_subformula(self, start_index, end_index):
         subformula_tokens = self.tokens[start_index:end_index]
         subformula_str = ''.join(token.value for token in subformula_tokens if token.value)
+        subformula_str = subformula_str.replace('(', '')  # Remove parenthesis
+        subformula_str = subformula_str.replace(')', '')  
         if subformula_str not in self.subformulas:
             self.subformulas.append(subformula_str)
 
 def find_subformulas(input_str):
-    input_str = input_str.replace(' ', '')  # Remove all spaces
+   
     tokens = Tokenizer(input_str).tokenize()
     parser = Parser(tokens)
-    subformulas = parser.parse()
+    ast, subformulas = parser.parse()
+   
     return subformulas if subformulas else False
 
+def evaluate_formula_ast(node, x, R, V):
+   
+    print(node.type)
+    
+    if node.type == A_PROPOSITION:
+        prop_index = int(node.value[1:])
+        return x in V[prop_index]
+    elif node.type == A_FALSITY:
+        return False
+    elif node.type == A_IMPLICATION:
+        s1 = evaluate_formula_ast(node.s1, x, R, V)
+        s2 = evaluate_formula_ast(node.s2, x, R, V)
 
-# Examples
+        # evaluate implication. True if Hypothesis false or conclusion true
+        return (not s1) or s2
+    
+    elif node.type == A_DIAMOND:
+        subformula_result = evaluate_formula_ast(node.s1, x, R, V)
+        accessible_points = R.get(x, [])
+        return all(evaluate_formula_ast(node.s1, y, R, V) for y in accessible_points)
+    else:
+        raise ValueError("Unknown formula type")
+
+
+def get_satisfying_points_ast(phi, n, R, V):
+    tokens = Tokenizer(phi).tokenize()
+    parser = Parser(tokens)
+    ast, subformulas = parser.parse()
+
+    # convert R to dict
+
+
+
+    satisfying_points = set()
+    for x in range(n):
+        if evaluate_formula_ast(ast, x, R, V):
+            satisfying_points.add(x)
+    return satisfying_points
+
+
+
+
+
+
+# Example usage
+
+phi = '(p0 --> p1)'
+n = 5
+R = {4: [5], 1: [4], 3: [4], 2: [3]}  # Convert list of tuples to dictionary
+V = [{1, 3, 5}, {2, 4}]
+print(get_satisfying_points_ast(phi, n, R, V))  # Output: {0, 2, 4}
+
+
+'''
+phi = '♢(p0 --> p1)'
+n = 5
+R = {(4,5),(1,4),(3,4),(2,3)}  # Convert list of tuples to dictionary
+V = [{1, 3, 5}, {2, 4}]
+print(get_satisfying_points_ast(phi, n, R, V))  # Output: {0, 2, 4}
+
+'''
+'''
+
 expression = 'p0 --> p2 --> ♢(p3)'
 print(f"{expression}\n{find_subformulas(expression)}\n")  
 expression = '(p0 --> p2) --> p3'
@@ -175,3 +271,4 @@ expression = 'p0 --> ♢(♢(p2)) --> ⊥' # p0 --> (♢♢p2 --> ⊥)
 print(f"{expression}\n{find_subformulas(expression)}\n") 
 expression = '(p0 --> ♢(♢(p2))) --> ⊥' 
 print(f"{expression}\n{find_subformulas(expression)}\n") 
+'''

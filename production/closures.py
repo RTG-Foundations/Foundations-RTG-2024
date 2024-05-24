@@ -1,10 +1,9 @@
+
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
 from collections import deque
-
-
 
 ''' 
     Displays 3D graph. Modified to work with matplotlib
@@ -225,7 +224,7 @@ def main():
         Calculate the closures
     '''
     n = 5
-    R = {(0, 1), (1, 2), (2, 3), (3,4)}
+    R = {(0, 1), (1, 2), (2, 3)}
     print(f"R: {R}\n")
 
    
