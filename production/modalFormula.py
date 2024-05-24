@@ -179,21 +179,16 @@ class Parser:
         if subformula_str not in self.subformulas:
             self.subformulas.append(subformula_str)
 
-def find_subformulas(input_str):
-   
-    tokens = Tokenizer(input_str).tokenize()
-    parser = Parser(tokens)
-    ast, subformulas = parser.parse()
-   
-    return subformulas if subformulas else False
+
+
 
 def evaluate_formula_ast(node, x, R, V):
    
-    print(node.type)
+    #print(node.type)
     
     if node.type == A_PROPOSITION:
-        prop_index = int(node.value[1:])
-        return x in V[prop_index]
+        prop = node.value
+        return x in V[prop]
     elif node.type == A_FALSITY:
         return False
     elif node.type == A_IMPLICATION:
@@ -204,71 +199,107 @@ def evaluate_formula_ast(node, x, R, V):
         return (not s1) or s2
     
     elif node.type == A_DIAMOND:
-        subformula_result = evaluate_formula_ast(node.s1, x, R, V)
-        accessible_points = R.get(x, [])
-        return all(evaluate_formula_ast(node.s1, y, R, V) for y in accessible_points)
+        #subformula_result = evaluate_formula_ast(node.s1, x, R, V)
+        expr = node.s1
+        neighbors = R[x]
+        for neighbor in neighbors:
+            if evaluate_formula_ast(expr, neighbor, R, V):
+                return(True)
+        return(False)
     else:
         raise ValueError("Unknown formula type")
+
+
+def find_subformulas(input_str):
+   
+    tokens = Tokenizer(input_str).tokenize()
+    parser = Parser(tokens)
+    try:
+        ast, subformulas = parser.parse()
+    except:
+        return False
+   
+    return subformulas if subformulas else False
 
 
 def get_satisfying_points_ast(phi, n, R, V):
     tokens = Tokenizer(phi).tokenize()
     parser = Parser(tokens)
-    ast, subformulas = parser.parse()
+    try:
+        ast, subformulas = parser.parse()
+    except:
+        return(False)
 
-    # convert R to dict
+    # Write the R as dictionary,  
+    # where each key is a node, and each 
+    # value is an array of neighbors
+    graph = {}
+    for i in range(n):
+        graph[i] = []
+    for (a, b) in R:
+        graph[a].append(b)  # R
 
-
-
+    # find satisfying points
     satisfying_points = set()
     for x in range(n):
-        if evaluate_formula_ast(ast, x, R, V):
+        if evaluate_formula_ast(ast, x, graph, V):
             satisfying_points.add(x)
     return satisfying_points
 
 
+def main():
+
+    # Exercise 2.10
+    n = 5
+    R = {(4,5),(1,4),(3,4),(2,3)} 
+    V = {'p1': {1, 3, 5}, 'p2':{2, 4}}
+
+    phi = '(p1 --> p2)'
+    print(f"phi = {phi}\n"
+        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
+        f"V={V}\n" 
+        f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
+
+    phi = '♢(p1 --> p2)'
+    print(f"phi = {phi}\n"
+        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
+        f"V={V}\n" 
+        f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
+
+    phi = '♢(⊥ --> p2)'
+    print(f"phi = {phi}\n"
+        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
+        f"V={V}\n" 
+        f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
+
+
+    # Exercise 2.9 b
+   
+
+    expression = 'p0 --> p2 --> ♢(p3)'
+    print(f"{expression}\n{find_subformulas(expression)}\n")  
+    expression = '(p0 --> p2) --> p3'
+    print(f"{expression}\n{find_subformulas(expression)}\n")  
+    expression = 'p0 --> (p2 --> p3)'
+    print(f"{expression}\n{find_subformulas(expression)}\n")  
+    expression = '(p0 --> p2) --> (♢(p3) --> p4)'
+
+    print(f"{expression}\n{find_subformulas(expression)}\n")  
+    expression = '♢(⊥ --> ⊥)'
+    print(f"{expression}\n{find_subformulas(expression)}\n") 
+    expression = '♢(p0) --> ♢p2'
+    print(f"{expression}\n{find_subformulas(expression)}\n")  
+    expression = 'p0 p2'
+    print(f"{expression}\n{find_subformulas(expression)}\n") 
+    expression = '♢(♢(♢((p0))))'
+    print(f"{expression}\n{find_subformulas(expression)}\n")  
+    expression = 'p0 --> ♢(♢(p2)) --> ⊥' # p0 --> (♢♢p2 --> ⊥)
+    print(f"{expression}\n{find_subformulas(expression)}\n") 
+    expression = '(p0 --> ♢(♢(p2))) --> ⊥' 
+    print(f"{expression}\n{find_subformulas(expression)}\n") 
+   
 
 
 
-
-# Example usage
-
-phi = '(p0 --> p1)'
-n = 5
-R = {4: [5], 1: [4], 3: [4], 2: [3]}  # Convert list of tuples to dictionary
-V = [{1, 3, 5}, {2, 4}]
-print(get_satisfying_points_ast(phi, n, R, V))  # Output: {0, 2, 4}
-
-
-'''
-phi = '♢(p0 --> p1)'
-n = 5
-R = {(4,5),(1,4),(3,4),(2,3)}  # Convert list of tuples to dictionary
-V = [{1, 3, 5}, {2, 4}]
-print(get_satisfying_points_ast(phi, n, R, V))  # Output: {0, 2, 4}
-
-'''
-'''
-
-expression = 'p0 --> p2 --> ♢(p3)'
-print(f"{expression}\n{find_subformulas(expression)}\n")  
-expression = '(p0 --> p2) --> p3'
-print(f"{expression}\n{find_subformulas(expression)}\n")  
-expression = 'p0 --> (p2 --> p3)'
-print(f"{expression}\n{find_subformulas(expression)}\n")  
-expression = '(p0 --> p2) --> (♢(p3) --> p4)'
-
-print(f"{expression}\n{find_subformulas(expression)}\n")  
-expression = '♢(⊥ --> ⊥)'
-print(f"{expression}\n{find_subformulas(expression)}\n") 
-expression = '♢(p0) --> ♢p2'
-print(f"{expression}\n{find_subformulas(expression)}\n")  
-expression = 'p0 p2'
-print(f"{expression}\n{find_subformulas(expression)}\n") 
-expression = '♢(♢(♢((p0))))'
-print(f"{expression}\n{find_subformulas(expression)}\n")  
-expression = 'p0 --> ♢(♢(p2)) --> ⊥' # p0 --> (♢♢p2 --> ⊥)
-print(f"{expression}\n{find_subformulas(expression)}\n") 
-expression = '(p0 --> ♢(♢(p2))) --> ⊥' 
-print(f"{expression}\n{find_subformulas(expression)}\n") 
-'''
+if __name__ == "__main__":
+    main()
