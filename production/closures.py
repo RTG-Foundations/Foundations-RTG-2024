@@ -113,10 +113,9 @@ Output: the transitive closure of R.
 
 https://www.geeksforgeeks.org/transitive-closure-of-a-graph/
 '''
-def transitive_closure(n, R):
+def floyd_transitive_closure(n, R):
 
     M = getMatrix(n,R)
-    print(M)
     
     # intermediate node
     # check if there exists a path from node i to node  j through node k.
@@ -134,6 +133,39 @@ def transitive_closure(n, R):
     return R_prime
 
 
+'''
+Calculates the transitive closure as R' = R U R^2 U R^3 U R^(n-1)
+Input: a positive integer n; a relation R on Xn
+Output: the transitive closure of R.
+
+'''
+def transitive_closure(n, R):
+    
+    # Copy R as set with original relations
+    R_prime = set(R)
+    
+    i = 0
+    while i < n:
+        # Collect pairs to add in a separate set
+        new_pairs = set()
+
+        for (a, b) in R_prime:
+            for (c, d) in R_prime:
+                if b == c:
+                    new_pairs.add((a, d))
+        
+        # No new pairs, done
+        if not new_pairs:
+            break
+        
+        # Add new pairs to R_prime
+        R_prime.update(new_pairs)
+        
+        i += 1
+    
+    return R_prime
+
+    
 '''
     Input: a positive integer n; a relation R on Xn
     Output: the connected components of (Xn, R U R^-1)
@@ -241,8 +273,11 @@ def main():
 
 
     # Transitive test
-    R_trans = transitive_closure(n, R)
+    R_floyd_trans = floyd_transitive_closure(n, R)
     # R + R^2 + ... + R^(n-1)
+    print(f"Transitive closure of R using Floyd Warshall: {R_floyd_trans}\n")
+
+    R_trans = transitive_closure(n, R)
     print(f"Transitive closure of R: {R_trans}\n")
 
    
@@ -266,7 +301,7 @@ def main():
         Create graph for reflexive, symmetric, transitive closures
     '''
 
-    
+   
     graph_R = nx.DiGraph()
     for (x, y) in R:
         graph_R.add_edge(x, y)
@@ -307,6 +342,7 @@ def main():
 
     plt.suptitle("Red = irreflexive, Blue = reflexive")
     plt.show()
+    
     
 
 if __name__ == "__main__":

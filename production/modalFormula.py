@@ -316,6 +316,12 @@ def find_subformulas(input_str):
     R on Xn ; subsets V1 , . . . Vm of Xn ;
     Output: the set of points x in Xn such that M, x ⊨ φ, where the valuation of pi in
     M is Vi.
+
+    Time complexity:
+    O(n*t*d) where n is the number of worlds, t is the number of nodes of the AST corresponding to phi,
+    and d is the maximum depth of the relation R
+
+
 '''
 def get_satisfying_points_ast(phi, n, R, V):
     tokens = Tokenizer(phi).tokenize()
@@ -345,8 +351,11 @@ def get_satisfying_points_ast(phi, n, R, V):
 
 '''
     Exercise 2.11
-    Input: a modal formula φ; a positive integer n; a relation R on X n ;
+    Input: a modal formula φ; a positive integer n; a relation R on Xn ;
     Output: is φ valid in (Xn , R)?
+
+    Time complexity:
+    O(2^(n*m)), where n is the number of worlds, and m is the number of propositional variables in phi
 '''
 
 def is_formula_valid_in_model(phi, n, R):
@@ -377,7 +386,8 @@ def is_formula_valid_in_model(phi, n, R):
     return True
 
 '''
-    
+    Helper method for  is_formula_valid_in_model(phi, n, R)   
+
     Input: 
         variables: array of propostional variables of form p0, p1, ...
         n: positive integer such that Xn = {0,1, ..., n-1}
@@ -386,6 +396,7 @@ def is_formula_valid_in_model(phi, n, R):
         A set of all possible valuations. Every valuation is represented as a dictionary,
         where each key is a proposition, and each value is an array of 
         nodes where the proposition is true
+
 '''
 def generate_all_valuations(variables, n):
     valuations = []
