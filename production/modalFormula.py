@@ -55,7 +55,7 @@ A_DIAMOND = 'DIAMOND'
         A_IMPLICATION, A_DIAMOND 
         value: name of the propositional variable,if applicable
         
-    Output: Creates a token object
+    Output: Creates a ASTNode object
 
 
 '''
