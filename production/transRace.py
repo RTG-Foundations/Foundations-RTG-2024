@@ -15,6 +15,9 @@ def getRelation(n, M):
 
 '''
     Get transitive closure using Floyd Warshall's algorithm
+
+    Time complexity:
+    O(n^3)
 '''
 def floyd_transitive_closure(n, M):
     for k in range(n):
@@ -25,6 +28,13 @@ def floyd_transitive_closure(n, M):
 
 '''
     Get transitive closure as M U M^2 U M^4 U ...
+
+    Time complexity:
+    O(log(n)*n^3)
+
+    NumPy uses BLAS routines to perform matrix multiplication
+    faster than O(n^3)
+
 '''
 def transitive_closure(n, M):
     a = 1

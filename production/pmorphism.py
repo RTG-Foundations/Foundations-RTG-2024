@@ -1,4 +1,5 @@
 from itertools import product
+from collections import deque
 
 '''
     Defines a Frame
@@ -87,8 +88,14 @@ def generate_mappings(F, G):
 
 '''
     Exercise 2.13. 
-    Given two finite frames F and G, to decide if F ↠ G.
+    Given two finite frames F and G, decide if F ↠ G.
 
+    Input:
+        F, G: frames containing an array of worlds and set of ordered pair relations
+    
+    Output: 
+        If possible, return a mapping f such that F ↠ G. Otherwise, return None
+    
     Time complexity:
     O(|G|^|F|) 
 '''
@@ -105,8 +112,10 @@ def check_p_morphism(F, G):
     return None
 
 
-
-def printAns(F,G, f):
+'''
+    Helper method to display result of check_p_morphism
+'''
+def printIsPMorph(F,G, f):
     
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
@@ -124,24 +133,157 @@ def printAns(F,G, f):
 
 
 
+
+'''
+    Helper method to perform BFS to find all nodes 
+    in same connected component
+'''
+def bfs(graph, start_node):
+    # set for tracking visited nodes
+    visited = set()
+
+    # queue to track the nodes to explore
+    # add start node to the queue
+    queue = deque([start_node])
+    
+    while queue:
+        # dequeue front node
+        node = queue.popleft()
+        if node not in visited:
+            # add current node to visted array
+            visited.add(node)
+
+            # Add neighbors to the queue
+            neighbors = graph[node]
+            queue.extend(neighbors)
+    
+    return visited
+
+
+'''
+    Exercise 2.7
+    Input: 
+        worlds: set of all possible worlds
+        start: starting world
+        R: set of (x,y) pairs representing relation from x to y
+        
+    Output: set of the reachable worlds from the start node
+'''
+def find_reachable(worlds, start, R):
+    
+    # Write the graph as dictionary,  
+    # where each key is a node, and each 
+    # value is an array of neighbors
+    graph = {}
+    
+    for world in worlds:
+        graph[world] = []
+
+    for (a, b) in R:
+        graph[a].append(b) 
+
+    # Find connected components starting from l using BFS
+    reachable =  bfs(graph, start)
+
+    return reachable
+
+
+'''
+    Returns whether Log(F) ⊆ Log(G)
+'''
+def log_subset(F, G):
+    subframes_F = []
+    for node in F.points:
+        reachable = find_reachable(F.points, node, F.relation)
+        subrelation = {(x, y) for x, y in F.relation if x in reachable and y in reachable}
+        subframes_F.append(Frame(reachable, subrelation))
+    
+    subframes_G = []
+    for node in G.points:
+        reachable = find_reachable(G.points, node, G.relation)
+        subrelation = {(x, y) for x, y in G.relation if x in reachable and y in reachable}
+        subframes_G.append(Frame(reachable, subrelation))
+
+
+    # Exercise 1.10
+    # Let F be a pretransitive frame, G a finite point-generated frame.
+    # Log(F) ⊆ Log(G ) iff F′ ↠ G for some point-generated subframe F′ of F.
+    for sub_G in subframes_G:
+        foundFPrime = False
+        for sub_F in subframes_F:
+            f = check_p_morphism(sub_F, sub_G)
+            if f is not None:
+                foundFPrime = True
+                break
+        
+        if foundFPrime == False:
+            return False
+    
+    return True
+
+'''
+    Helper method to display result of log_equal
+'''        
+def printLogEqual(F,G, result):
+    
+    print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
+    print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+
+    if (result == True):
+        print("Log(F) = Log(G)")
+    else:
+        print("Log(F) != Log(G)")
+    print()
+
+
+'''
+    Exercise 2.14
+    Given two finite frames F and G, to decide if Log(F) = Log(G). 
+'''
+def log_equal(F, G):
+    return log_subset(F, G) and log_subset(G, F)
+
+
+
 def main():
 
-    # good
+    # Exercise 2.14
+    F = Frame(points=[0,1,2,3,4,5], relation={(0, 1),(2,3),(4,5)})
+    G = Frame(points=[0,1,2,3,4,5], relation={(1,2), (3,4), (5,0)})
+    printLogEqual(F, G, log_equal(F, G))
+
+    F = Frame(points=['a','b','c'], relation={('a', 'b'), ('a','c')})
+    printLogEqual(F, F, log_equal(F, F))
+
+    F = Frame(points=['x'], relation={})
+    G = Frame(points=[0,1], relation={})
+    printLogEqual(F, G, log_equal(F, G))
+
+    F = Frame(points=[0,1,2,3], relation={(0,1),(2,3)})
+    G = Frame(points=['a','b'], relation={('a','b')})
+    printLogEqual(F, G, log_equal(F, G))
+   
+    F = Frame(points = {0, 1, 2}, relation={(0, 1), (1, 2)})
+    G = Frame(points = {0, 1, 2, 3}, relation = {(0, 1), (1, 2), (2, 3)})
+    printLogEqual(F, G, log_equal(F, G))
+
+
+    # Exercise 2.13
     F = Frame(points=['a','b','c'], relation={('a', 'b'), ('a','c')})
     G = Frame(points=['e', 'd'], relation={('d','e')})
     f = check_p_morphism(F, G)
-    printAns(F,G,f)
+    printIsPMorph(F,G,f)
 
     F = Frame(points=['a','b','c'], relation={})
     G = Frame(points=['e', 'd'], relation={})
     f = check_p_morphism(F, G)
-    printAns(F,G,f)
+    printIsPMorph(F,G,f)
 
     F = Frame(points=[0,1,2], relation={(0, 1), (1,2)})
     G = Frame(points=['a'], relation={('a','a')})
     f = check_p_morphism(F, G)
-    printAns(F,G,f)
-
+    printIsPMorph(F,G,f)
+   
     
 
 
