@@ -1,7 +1,7 @@
-
-import time
-import random
+from itertools import product
 from collections import deque
+import random
+import time
 
 '''
     Defines a Frame
@@ -26,8 +26,8 @@ class Frame:
 
 '''
     Input:
-        f: dictionary representing the SURJECTIVE mapping, where each key is a point in F, and each
-        value is the mapped point in G. 
+        f: dictionary representing the mapping, where each key is a point in F, and each
+        value is the mapped point in G
         F, G: frames containing an array of worlds and set of ordered pair relations
     Output:
         Returns whether f is a p-morphism from F to G
@@ -37,9 +37,9 @@ def is_p_morphism(f, F, G):
     X1 = F.points
     X2 = G.points
     R1 = F.relation
-    R2 = G.relation
+    R2 = G. relation
 
-    # surjective 
+    #  surjective
     mappedVals = []
     for key in f:
         mappedVals.append(f[key])
@@ -47,13 +47,15 @@ def is_p_morphism(f, F, G):
     if set(mappedVals) != set(X2):
         return False
     
-    # for all x,y ∈ X1, if x R1 y --> f(x) R2 f(y)
+    
+    
+    # for all x,y ∈ X1 we have x R1 y --> f(x) R2 f(y)
     for (x, y) in R1:
         if (f[x], f[y]) not in R2:
             return False
     
 
-    # for all x ∈ X1, u ∈ X2 , if f(x) R2 u --> ∃ x' ∈ x1  x R1 x' and f(x') = u
+    # for all x ∈ X1, u ∈ X2 we have f(x) R2 u --> ∃ x' ∈ x1  x R1 x' and f(x') = u
     for x in X1:
         for u in X2:
             if (f[x], u) in R2:
@@ -72,40 +74,18 @@ def is_p_morphism(f, F, G):
 
 
 '''
-    Incrementally build a mapping f, while checking if the current partial 
-    mapping can potentially lead to a valid p-morphism. 
-    If a valid mapping is found, return True; otherwise, backtrack.
+    Generate all possible mappings from F to G
 '''
-def backtrack(f, F, G, assigned):
+def generate_mappings(F, G):
     
-    X1 = F.points
-    X2 = G.points
-    
-    # Base case: all points in F are assigned to G. 
-    # Return whether f is p-morphism
-    if len(f) == len(X1):
-        #print(f)
-        return is_p_morphism(f, F, G)
-
-    for x in X1:
-        if x not in f: # Only consider unassigned points in X1
-            for u in X2:
-                # Don't re-assign u to x unless all points used
-                if u not in assigned or set(assigned) == set(X2):
-                    # Assign u to x
-                    f[x] = u
-                    assigned.append(u) 
-                    
-                    # Recursively build the mapping
-                    if backtrack(f, F, G, assigned): 
-                        return True # Found a valid p-morphism
-                    del f[x]  # Backtrack: remove the assignment
-                    assigned.remove(u)   # Backtrack: unmark u as assigned
-
-            return False  # No valid assignment found for this x
+    functs = []
+   
+    # Generate all possible mappings from F.points to G.points
+    all_mappings = product(G.points, repeat=len(F.points))
+    for mapping in all_mappings:
+        functs.append({x: mapping[i] for i, x in enumerate(F.points)})
         
-    return False  
-
+    return functs
 
 
 '''
@@ -122,14 +102,15 @@ def backtrack(f, F, G, assigned):
     O(|G|^|F|) 
 '''
 def check_p_morphism(F, G):
+    
     # surjective not possible
     if len(F.points) < len(G.points):
         return None
-
-    f = {}
-    assigned = []
-    if backtrack(f, F, G, assigned):
-        return f
+    
+    candidate_functions = generate_mappings(F, G)
+    for f in candidate_functions:
+        if is_p_morphism(f, F, G):
+            return f
     return None
 
 
@@ -141,8 +122,7 @@ def printIsPMorph(F,G, f):
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
 
-    isPMorp = (f != None)
-    if(not isPMorp):
+    if(f == None):
         print("G is NOT a p-morphic image of F")
     
     else:
@@ -152,6 +132,7 @@ def printIsPMorph(F,G, f):
             x2 = f[x1]
             print(f"\t {{ {x1} --> {x2}")
     print()
+
 
 
 '''
@@ -266,8 +247,6 @@ def log_equal(F, G):
 
 
 
-
-
 '''
     Generate a random frame of specified size c
 '''
@@ -286,11 +265,10 @@ def generate_random_frame(c):
 
 
 def main():
-
+    
     '''
         Known Examples
     '''
-
     # Exercise 2.14
     F = Frame(points=[0,1,2,3,4,5], relation={(0, 1),(2,3),(4,5)})
     G = Frame(points=[0,1,2,3,4,5], relation={(1,2), (3,4), (5,0)})
@@ -328,9 +306,10 @@ def main():
     printIsPMorph(F,G,f) # False
     
 
+    
 
     '''
-        Time needed to run check_p_morphism(F, G)
+        Time check_p_morphism(F, G)
     '''
 
     F_card = int(input("Enter |F|: "))
@@ -350,16 +329,13 @@ def main():
     
 
     if ellapsed != None:
-        with open("pMorphism_backtracking_times.txt", "a") as file:
+        with open("pMorphism_naive_times.txt", "a") as file:
             file.write(f"|F| = {len(F.points)} |G| = {len(G.points)} F->->G? {f != None}\n")
             file.write(f"\tTime (ns): {ellapsed}\n")
     
 
     print(f"|F| = {len(F.points)} |G| = {len(G.points)} F->->G? {f != None}\n")
     print(f"\tTime (ns): {ellapsed}\n")
-    
-
-
 
 
 

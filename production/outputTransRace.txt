@@ -49,3 +49,6 @@ N = 500
 N = 500
 	Floyd-Warshall Time (ns): 63097491502.76184
 	Trans. Closure Time (ns): 2032313585.281372
+N = 250
+	Floyd-Warshall Time (ns): 11377319097.51892
+	Trans. Closure Time (ns): 170062065.12451172

@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import time
 
@@ -54,11 +53,8 @@ def generate_random_binary_matrix(n):
 def main():
    
     # get n
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <n>")
-        return
-    n = int(sys.argv[1])
-    
+    n = int(input("Enter size of nxn matrix: "))
+   
     # random binary matrix
     M = generate_random_binary_matrix(n)
     
@@ -87,7 +83,7 @@ def main():
         raise ValueError("Transitive closures are not equal!")
    
     # write results to outputRace.txt
-    with open("outputRace.txt", "a") as f:
+    with open("outputTransRace.txt", "a") as f:
         f.write(f"N = {n}\n")
         f.write(f"\tFloyd-Warshall Time (ns): {time_floyd}\n")
         f.write(f"\tTrans. Closure Time (ns): {time_trans}\n")

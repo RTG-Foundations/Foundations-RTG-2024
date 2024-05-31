@@ -69,6 +69,7 @@ def getRelation(n, M):
             
 
 '''
+Exercise 2.2
 Input: a positive integer n; a relation R on Xn
 Output: the smallest relation R'
 that contains R and is reflexive (such a relation is
@@ -86,6 +87,7 @@ def reflexive_closure(n, R):
 
 
 '''
+Exercise 2.3
 Input: a positive integer n; a relation R on Xn
 Output: the smallest relation R'
 that contains R and is symmetric (such a relation
@@ -134,6 +136,7 @@ def floyd_transitive_closure(n, R):
 
 
 '''
+Exercise 2.5
 Calculates the transitive closure as M U M^2 U M^4 U ...
 Input: a positive integer n; a relation R on Xn
 Output: the transitive closure of R.
@@ -151,9 +154,8 @@ def transitive_closure(n, R):
     return R_prime
     
 
-
-    
 '''
+    Exercise 2.6
     Input: a positive integer n; a relation R on Xn
     Output: the connected components of (Xn, R U R^-1)
 '''
@@ -240,7 +242,6 @@ def find_subframe(n,l, R):
 
 def main():
 
-    
 
     '''
         Calculate the closures
