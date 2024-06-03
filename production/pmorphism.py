@@ -87,10 +87,11 @@ def backtrack(f, F, G, assigned):
         #print(f)
         return is_p_morphism(f, F, G)
 
+    # map x --> u where x in X1 and u in X2
     for x in X1:
         if x not in f: # Only consider unassigned points in X1
             for u in X2:
-                # Don't re-assign u to x unless all points used
+                # Don't re-assign u to x unless all points in X2 mapped
                 if u not in assigned or set(assigned) == set(X2):
                     # Assign u to x
                     f[x] = u

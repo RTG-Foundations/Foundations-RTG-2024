@@ -309,7 +309,7 @@ def main():
     
 
     '''
-        Time check_p_morphism(F, G)
+        Time needed to run check_p_morphism(F, G)
     '''
 
     F_card = int(input("Enter |F|: "))
