@@ -16,34 +16,34 @@
 '''
 
 
-
-import itertools
-
+"""
+    Computes ♢R (Y) = R^−1 [Y]
+"""
 def diamond_R(Y, R):
-    """Computes ♢R (Y) = R^−1 [Y]"""
     result = set()
     for (x, y) in R:
         if y in Y:
             result.add(x)
     return result
 
-def powerset(s):
-    """Returns all subsets of the set s"""
-    return [frozenset(i) for i in itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(len(s)+1))]
 
+"""
+    Returns the closure of V under set-theoretic operations
+"""
 def closure_under_set_theoretic_operations(V, X):
-    """Returns the closure of V under set-theoretic operations"""
-    P_X = powerset(X)
     closure = set(V)
     
     # Union, intersection, and complement of subsets in closure
     while True:
         new_sets = set(closure)
+
         for A in closure:
+            new_sets.add(X - A)
+
             for B in closure:
                 new_sets.add(A.union(B))
                 new_sets.add(A.intersection(B))
-                new_sets.add(X - A)
+            
         
         if new_sets == closure:
             break
@@ -51,8 +51,12 @@ def closure_under_set_theoretic_operations(V, X):
         
     return closure
 
+"""
+    Computes the smallest family [V] that contains V and 
+    is closed under set-theoretic operations and ♢R
+    
+"""
 def compute_closure(V, R, X):
-    """Computes the smallest family [V] that contains V and is closed under set-theoretic operations and ♢R"""
     closure = set(map(frozenset, V))
     X = frozenset(X)
     
@@ -71,14 +75,22 @@ def compute_closure(V, R, X):
         
         closure = new_closure
     
-    return set(map(set, closure))
+
+    return closure #set(map(set, closure))
 
 
-# Example usage
-X = {0, 1, 2, 3}
-R = {(0, 1), (1, 3), (3, 0)}
-V = [{0,1,2}, {3}]
+def main():
+    X = {0, 1, 2, 3}
+    R = {(0, 1), (1, 3), (3, 0)}
+    V = [{0,1,2}, {3}]
+    result = compute_closure(V, R, X)
+    print(f"X: {X}\nR: {R}\nV: {V}\nlength of [V]: {len(result)}\n[V]: {[set(x) for x in result]}\n")
 
-result = compute_closure(V, R, X)
-for subset in result:
-    print(subset)
+    X = {0, 1, 2, 3, 4, 5}
+    R = {(0, 1), (0,2),(1,2),(1,3),(2,3),(2,4),(3,4),(3,0),(4,0),(4,1)}
+    V = [{5}]
+    result = compute_closure(V, R, X)
+    print(f"X: {X}\nR: {R}\nV: {V}\nlength of [V]: {len(result)}\n[V]: {[set(x) for x in result]}\n")
+
+if __name__ == "__main__":
+    main()
