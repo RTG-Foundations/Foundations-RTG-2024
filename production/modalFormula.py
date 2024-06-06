@@ -12,7 +12,7 @@ the following syntax for modal formulas:
 	| '♢''('<expr>')'
 	| <var>
 	
-<var> =  ⊥ | p0 | p2 
+<var> =  ⊥ | p0 | p1 | p2 | ...
 
 During parsing, stores the formula s as an abstract syntax tree, which can be evaluated to 
 1)  Return an ordered set (ψ1, . . . , ψk) of all subformulas of s such that if 
@@ -355,7 +355,8 @@ def get_satisfying_points_ast(phi, n, R, V):
     Output: is φ valid in (Xn , R)?
 
     Time complexity:
-    O(2^(n*m)), where n is the number of worlds, and m is the number of propositional variables in phi
+    O(2^(n*m)*n*d), where n is the number of worlds,  m is the number of 
+    propositional variables in phi, and d is depth of the AST
 '''
 
 def is_formula_valid_in_model(phi, n, R):
@@ -423,30 +424,6 @@ def generate_all_valuations(variables, n):
 
 
 def main():
-    
-    # Exercise 2.10
-    n = 5
-    R = {(4,5),(1,4),(3,4),(2,3)} 
-    V = {'p1': {1, 3, 5}, 'p2':{2, 4}}
-
-    phi = '(p1 --> p2)'
-    print(f"phi = {phi}\n"
-        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
-        f"V={V}")
-    print(f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
-
-    phi = '♢(p1 --> p2)'
-    print(f"phi = {phi}\n"
-        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
-        f"V={V}")
-    print(f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
-
-    phi = '♢(⊥ --> p2)'
-    print(f"phi = {phi}\n"
-        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
-        f"V={V}") 
-    print(f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
-
 
     # Exercise 2.9 b
     expression = '♢(p4 --> (♢(p1)))'
@@ -478,8 +455,32 @@ def main():
     print(f"{expression}\n{find_subformulas(expression)}\n") 
   
 
-
+        
     # Exercise 2.10
+    n = 6
+    R = {(4,5),(1,4),(3,4),(2,3)} 
+    V = {'p1': {1, 3, 5}, 'p2':{2, 4}}
+
+    phi = '(p1 --> p2)'
+    print(f"phi = {phi}\n"
+        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
+        f"V={V}")
+    print(f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
+
+    phi = '♢(p1 --> p2)'
+    print(f"phi = {phi}\n"
+        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
+        f"V={V}")
+    print(f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
+
+    phi = '♢(⊥ --> p2)'
+    print(f"phi = {phi}\n"
+        f"Xn= {', '.join(str(num) for num in range(n))}\n" 
+        f"V={V}") 
+    print(f"Satisfying points: {get_satisfying_points_ast(phi, n, R, V)}\n")  
+
+
+    # Exercise 2.11
     phi = '(p1 --> ♢(p2)) --> (p1 --> ♢p2)'
     n = 3
     R = {(0,0),(0,1),(1,2),(2,0),(0,2)} 
