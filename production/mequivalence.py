@@ -241,12 +241,52 @@ def print_quotient_frame(pts_sets, R):
     print(f"R: {R}\n")
 
 
-'''
-    Returns the powerset of s as an array of sets
-'''
-def get_powerset(s):
-    s = list(s)
-    return [set(combo) for combo in chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))]
+"""
+    Generate the powerset of the set G
+"""
+def generate_powerset(G):
+    n = len(G)
+    powerset = []
+    for i in range(1 << n):
+        subset = {G[j] for j in range(n) if (i & (1 << j))}
+        powerset.append(subset)
+    return powerset
+
+
+"""
+    Generate combinations using Gosper's hack.
+"""
+def gosper_combination(n, k):
+    c = (1 << k) - 1
+    while c < (1 << n):
+        yield c
+        x = c & -c
+        y = c + x
+        c = (((c & ~y) // x) >> 1) | y
+
+"""
+    Convert a bit representation to a combination of sets
+
+    """
+def get_combination_from_bits(powerset, bits):
+    return [powerset[i] for i in range(len(powerset)) if bits & (1 << i)]
+
+
+"""
+    Generate all combinations of m sets from the powerset of G using Gosper's hack.
+
+"""
+def generate_m_combinations_of_powerset(G, m):
+    powerset = generate_powerset(G)
+    n = len(powerset)
+    combinations_of_sets = []
+    
+    for bits in gosper_combination(n, m):
+        combination = get_combination_from_bits(powerset, bits)
+        combinations_of_sets.append(combination)
+    
+    return combinations_of_sets
+
 
 
 '''
@@ -275,11 +315,8 @@ def m_subset(F,G,m):
         sub_F = pmorphism.Frame(reachable, subrelation)
 
         # generate all possible combinations of m sets from the powerset of F
-        F_ps = get_powerset(sub_F.points)
-        F_subsets = []
-        for combo in combinations(F_ps, m):
-            F_subsets.append(list(combo))
-
+        F_subsets = generate_m_combinations_of_powerset(list(sub_F.points), m)
+       
         for U in F_subsets:
 
             # F/∼ [U]
@@ -296,11 +333,8 @@ def m_subset(F,G,m):
                 sub_G = pmorphism.Frame(reachable, subrelation)
             
                 # generate all possible combinations of m sets from the powerset of G
-                G_ps = get_powerset(sub_G.points)
-                G_subsets = []
-                for combo in combinations(G_ps, m):
-                    G_subsets.append(list(combo))
-
+                G_subsets = generate_m_combinations_of_powerset(list(sub_G.points), m)
+                
                 for V in G_subsets:
                     
                     # G/∼ [V]
@@ -361,6 +395,17 @@ def print_mEquiv(F,G,m, result):
 
 
 def main():
+   
+    m = 3
+    F = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0)})
+    G = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(3,3)})
+    result = mEquiv(F,G, m)
+    write_mEquiv(F,G,m, result)
+    
+    m = 2
+    result = mEquiv(F,G, m)
+    write_mEquiv(F,G,m, result)
+
 
     
     X = {0, 1, 2, 3,4,5,6,7,8,9,10,11}
@@ -410,15 +455,7 @@ def main():
 
 
 
-    m = 1
-    F = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0)})
-    G = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(3,3)})
-    result = mEquiv(F,G, m)
-    write_mEquiv(F,G,m, result)
-    
-    m = 2
-    result = mEquiv(F,G, m)
-    write_mEquiv(F,G,m, result)
+  
 
     m = 2
     F = pmorphism.Frame(points=[0,1,2], relation={(0, 1),(1,0),(1,2), (2,1)})

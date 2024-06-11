@@ -75,7 +75,38 @@ def is_p_morphism(f, F, G):
     Incrementally build a mapping f, while checking if the current partial 
     mapping can potentially lead to a valid p-morphism. 
     If a valid mapping is found, return True; otherwise, backtrack.
+
 '''
+
+def build_pMorph(F, G, k, f, points_F, points_G):
+    R = F.relation
+    S = G.relation
+    n = len(points_F)
+    
+    # Base case: all points in F are assigned to G. 
+    # Return whether f is p-morphism
+    if k >= n:
+        return(is_p_morphism(f, F, G))
+          
+    for y in points_G:
+        f[points_F[k]] = y
+
+        valid = True
+        # Forward condition
+        for i in range(k):
+            if (points_F[i], points_F[k]) in R and (f[points_F[i]], f[points_F[k]]) not in S:
+                valid = False
+                break
+            if (points_F[k], points_F[i]) in R and (f[points_F[k]], f[points_F[i]]) not in S:
+                valid = False
+                break
+
+        if valid and build_pMorph(F, G, k + 1, f, points_F, points_G):
+            return True
+
+
+    return False
+
 def backtrack(f, F, G, assigned):
     
     X1 = F.points
@@ -128,8 +159,7 @@ def check_p_morphism(F, G):
         return None
 
     f = {}
-    assigned = []
-    if backtrack(f, F, G, assigned):
+    if build_pMorph(F, G, 0, f, list(F.points), list(G.points)):
         return f
     return None
 
@@ -291,6 +321,22 @@ def main():
     '''
         Known Examples
     '''
+    # Exercise 2.13
+    F = Frame(points=['a','b','c'], relation={('a', 'b'), ('a','c')})
+    G = Frame(points=['e', 'd'], relation={('d','e')})
+    f = check_p_morphism(F, G)
+    printIsPMorph(F,G,f) # True
+
+    F = Frame(points=['a','b','c'], relation={})
+    G = Frame(points=['e', 'd'], relation={})
+    f = check_p_morphism(F, G)
+    printIsPMorph(F,G,f) # True
+
+    F = Frame(points=[0,1,2], relation={(0, 1), (1,2)})
+    G = Frame(points=['a'], relation={('a','a')})
+    f = check_p_morphism(F, G)
+    printIsPMorph(F,G,f) # False
+
 
     # Exercise 2.14
     F = Frame(points=[0,1,2,3,4,5], relation={(0, 1),(2,3),(4,5)})
@@ -312,21 +358,7 @@ def main():
     G = Frame(points = {0, 1, 2, 3}, relation = {(0, 1), (1, 2), (2, 3)})
     printLogEqual(F, G, log_equal(F, G)) # False
 
-    # Exercise 2.13
-    F = Frame(points=['a','b','c'], relation={('a', 'b'), ('a','c')})
-    G = Frame(points=['e', 'd'], relation={('d','e')})
-    f = check_p_morphism(F, G)
-    printIsPMorph(F,G,f) # True
-
-    F = Frame(points=['a','b','c'], relation={})
-    G = Frame(points=['e', 'd'], relation={})
-    f = check_p_morphism(F, G)
-    printIsPMorph(F,G,f) # True
-
-    F = Frame(points=[0,1,2], relation={(0, 1), (1,2)})
-    G = Frame(points=['a'], relation={('a','a')})
-    f = check_p_morphism(F, G)
-    printIsPMorph(F,G,f) # False
+    
     
 
 

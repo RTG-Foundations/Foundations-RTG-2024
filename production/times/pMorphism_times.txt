@@ -1,0 +1,21 @@
+|F| = 5 |G| = 4
+	Method: Forward. Number of p-morphs: 0. Time (s): 0.005797624588012695
+	Method: Forward and back. Number of p-morphs: 0. Time (s): 0.004255771636962891
+	Method: Back-tracking. Number of p-morphs: 0. Time (s): 0.002546072006225586
+	Method: CSP. Number of p-morphs: 0. Time (s): 0.04800748825073242
+	Method: Enumeration. Number of p-morphs: 0. Time (s): 0.012368202209472656
+
+|F| = 5 |G| = 4
+	Method: Forward. Number of p-morphs: 0. Time (s): 0.00513458251953125
+	Method: Forward and back. Number of p-morphs: 0. Time (s): 0.00744938850402832
+	Method: Back-tracking. Number of p-morphs: 0. Time (s): 0.0015189647674560547
+	Method: CSP. Number of p-morphs: 0. Time (s): 0.03695249557495117
+	Method: Enumeration. Number of p-morphs: 0. Time (s): 0.010436773300170898
+|F| = 10 |G| = 8
+	Method: Forward. Number of p-morphs: 0. Time (s): 2.0192131996154785
+	Method: Forward and back. Number of p-morphs: 0. Time (s): 0.8657839298248291
+	Method: Back-tracking. Number of p-morphs: 0. Time (s): 29.798819303512573
+|F| = 10 |G| = 8
+	Method: Forward. Number of p-morphs: 0. Time (ns): 35293793916.70227
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 2763770580.291748
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 29338980436.325073

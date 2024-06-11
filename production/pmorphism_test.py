@@ -1,6 +1,8 @@
 
 import time
 import random
+import math
+from itertools import product
 
 '''
     Defines a Frame
@@ -70,31 +72,13 @@ def is_p_morphism(f, F, G):
     return True
 
 
-
-
-
-def printIsPMorph_array(f):
-    
-    
-    isPMorp = (f != None)
-    if(not isPMorp):
-        print("G is NOT a p-morphic image of F")
-    
-    else:
-        print("F ->-> G when: ")
-        print("f = ")
-        for x1 in  range(len(f)):
-            x2 = f[x1]
-            print(f"\t {{ {x1} --> {x2}")
-    print()
-
 '''
     Helper method to display result of p-morphism methods
 '''
 def printIsPMorph(f):
     
     
-    isPMorp = (f != None)
+    isPMorp = (f != None and f != [])
     if(not isPMorp):
         print("G is NOT a p-morphic image of F")
     
@@ -112,25 +96,35 @@ def printIsPMorph(f):
 
 '''
     Generate a random frame of specified size c
+   
 '''
 def generate_random_frame(c):
     points = set(range(c)) #  {0, 1, ..., n-1}
     relation = set() 
-    max_relations = c * (c - 1) // 2  # Max number of relations
-
-    for _ in range(random.randint(1, max_relations)): # number of relations to add
+    max_relations =  math.ceil(math.log(c))  # Max number of relations
+   
+    for _ in range(max_relations): # number of relations to add random.randint(1, max_relations)
         x = random.choice(tuple(points)) 
         y = random.choice(tuple(points)) 
         relation.add((x, y)) # add (x,y) to relation set
+
+     # 10% chance
+    '''
+    for i in range(c):
+        for j in range(c):
+            if random.random() < .001:
+                relation.add((i,j))
+    '''
     
     return Frame(points, relation)
 
+   
 
 
 
 '''
     
-    ******************  FORWARD ****************
+    ******************  FORWARD AND BACK ****************
 
 '''
 
@@ -138,48 +132,95 @@ def generate_random_frame(c):
 
 
 
-def pMorph(F, G, k, f, assigned, points_F, points_G):
-    n = len(points_F)
-    m = len(points_G)
+def pMorphForwardBack(F, G, k, f, points_F, points_G, results):
     R = F.relation
     S = G.relation
-
+    n = len(points_F)
+    
     if k >= n:
-        return is_p_morphism(f, F, G)
+        if is_p_morphism(f, F, G):
+            results.append(f.copy())
+        return # changed from return True
 
     for y in points_G:
-        if y not in assigned  or set(assigned) == set(G.points):
-            f[points_F[k]] = y
-            assigned.append(y)
+        f[points_F[k]] = y
+    
+        valid = True
+        # Forward condition
+        for i in range(k):
+            if (points_F[i], points_F[k]) in R and (f[points_F[i]], f[points_F[k]]) not in S:
+                valid = False
+                break
+            if (points_F[k], points_F[i]) in R and (f[points_F[k]], f[points_F[i]]) not in S:
+                valid = False
+                break
 
-            valid = True
-            # Forward condition
-            for i in range(k):
-                if (points_F[i], points_F[k]) in R and (f[points_F[i]], f[points_F[k]]) not in S:
+        # Back condition
+        # for all x ∈ X1, u ∈ X2 , if f(x) R2 u --> ∃ x' ∈ x1  x R1 x' and f(x') = u
+        for i in range(k):
+            if (f[points_F[k]], f[points_F[i]]) in S:
+                if not any((points_F[k], points_F[j]) in R and f[points_F[j]] == f[points_F[i]] for j in range(k)):
                     valid = False
                     break
-                if (points_F[k], points_F[i]) in R and (f[points_F[k]], f[points_F[i]]) not in S:
+            if (f[points_F[i]], f[points_F[k]]) in S:
+                if not any((points_F[j], points_F[k]) in R and f[points_F[j]] == f[points_F[i]] for j in range(k)):
                     valid = False
                     break
+        
+        if valid:
+            pMorphForwardBack(F, G, k + 1, f,  points_F, points_G, results)
+          
+    return results 
 
-            # Back condition
-            
-            for i in range(k):
-                if (f[points_F[k]], f[points_F[i]]) in S:
-                    if not any((points_F[k], points_F[j]) in R and f[points_F[j]] == f[points_F[i]] for j in range(k)):
-                        valid = False
-                        break
-                if (f[points_F[i]], f[points_F[k]]) in S:
-                    if not any((points_F[j], points_F[k]) in R and f[points_F[j]] == f[points_F[i]] for j in range(k)):
-                        valid = False
-                        break
-            
-            if valid and pMorph(F, G, k + 1, f, assigned, points_F, points_G):
-                return True
 
-            assigned.remove(y)
+def check_pMorph_forward_back(F, G):
+    points_F = list(F.points)
+    points_G = list(G.points)
+    n = len(points_F)
+    m = len(points_G)
+    if n < m:
+        return None
 
-    return False
+    f = {}
+    results = []
+    results =  pMorphForwardBack(F, G, 0, f,  points_F, points_G, results)
+    return results
+
+'''
+    FORWARD ONLY
+'''
+def pMorphForward(F, G, k, f, points_F, points_G, results):
+    R = F.relation
+    S = G.relation
+    n = len(points_F)
+    
+    if k >= n:
+        if is_p_morphism(f, F, G):
+            results.append(f.copy())
+        return # changed from return True
+
+    for y in points_G:
+        #if y not in assigned  or set(assigned) == set(G.points):
+        f[points_F[k]] = y
+        #assigned.append(y)
+
+        valid = True
+        # Forward condition
+        for i in range(k):
+            if (points_F[i], points_F[k]) in R and (f[points_F[i]], f[points_F[k]]) not in S:
+                valid = False
+                break
+            if (points_F[k], points_F[i]) in R and (f[points_F[k]], f[points_F[i]]) not in S:
+                valid = False
+                break
+
+        if valid:
+            pMorphForward(F, G, k + 1, f, points_F, points_G, results)
+
+        #assigned.remove(y)
+
+    return results 
+
 
 def check_pMorph_forward(F, G):
     points_F = list(F.points)
@@ -190,10 +231,12 @@ def check_pMorph_forward(F, G):
         return None
 
     f = {}
-    assigned = []
-    if pMorph(F, G, 0, f, assigned, points_F, points_G):
-        return f
-    return None
+    #assigned = []
+    results = []
+    results =  pMorphForward(F, G, 0, f, points_F, points_G, results)
+    return results
+
+
 
 
 '''
@@ -213,7 +256,7 @@ variables with possible values which fall into ranges known as domains.
 '''
 
 
-from constraint import Problem, AllDifferentConstraint
+from constraint import Problem
 
 def check_pMorph_csp(F, G):
     if len(F.points) < len(G.points):
@@ -258,18 +301,20 @@ def check_pMorph_csp(F, G):
     problem.addConstraint(homomorphism_constraint, F.points)
     problem.addConstraint(back_condition_constraint, F.points)
 
+    # find one solution
+    '''
     solution = problem.getSolution()
     if solution:
         return solution  
     return None
-
-    # Find  ALL solutions
     '''
+    # Find  ALL solutions
+    
     solutions = problem.getSolutions()
     if solutions:
         return solutions
     return None
-    '''
+    
 
 
 
@@ -285,7 +330,7 @@ def check_pMorph_csp(F, G):
     mapping can potentially lead to a valid p-morphism. 
     If a valid mapping is found, return True; otherwise, backtrack.
 '''
-def backtrack(f, F, G, assigned):
+def backtrack(f, F, G, assigned, results):
     
     X1 = F.points
     X2 = G.points
@@ -293,8 +338,9 @@ def backtrack(f, F, G, assigned):
     # Base case: all points in F are assigned to G. 
     # Return whether f is p-morphism
     if len(f) == len(X1):
-        #print(f)
-        return is_p_morphism(f, F, G)
+        if is_p_morphism(f,F,G):
+            results.append(f.copy())
+        return # changed from return True
 
     # map x --> u where x in X1 and u in X2
     for x in X1:
@@ -307,14 +353,14 @@ def backtrack(f, F, G, assigned):
                     assigned.append(u) 
                     
                     # Recursively build the mapping
-                    if backtrack(f, F, G, assigned): 
-                        return True # Found a valid p-morphism
+                    backtrack(f, F, G, assigned, results)
+                       
                     del f[x]  # Backtrack: remove the assignment
                     assigned.remove(u)   # Backtrack: unmark u as assigned
 
-            return False  # No valid assignment found for this x
+            return results # No valid assignment found for this x
         
-    return False  
+    return results
 
 
 
@@ -325,145 +371,184 @@ def check_pMorph_backtracking(F, G):
 
     f = {}
     assigned = []
-    if backtrack(f, F, G, assigned):
-        return f
-    return None
+    results = []
+    results = backtrack(f, F, G, assigned, results)
+    return results
+    
+'''
+    ENUMERATION
+'''
+def generate_mappings(F, G):
+    
+    functs = []
+   
+    # Generate all possible mappings from F.points to G.points
+    all_mappings = product(G.points, repeat=len(F.points))
+    for mapping in all_mappings:
+        functs.append({x: mapping[i] for i, x in enumerate(F.points)})
+        
+    return functs
+
+
+def check_pMorph_enum(F, G):
+    
+    # surjective not possible
+    if len(F.points) < len(G.points):
+        return None
+    
+    results = []
+    candidate_functions = generate_mappings(F, G)
+    for f in candidate_functions:
+        if is_p_morphism(f, F, G):
+            results.append(f)
+    return results
+
+
+
+'''
+    Run all p-morphism methods and record execution time
+
+'''
+def runCompare(F,G):
+
+    with open("times/pMorphism_times.txt", "a") as file:
+        file.write(f"|F| = {len(F.points)} |G| = {len(G.points)}\n")
+
+
+    print("Recursively build to satisfy homomorphism condition: ")
+    start_time = time.time()
+    results = check_pMorph_forward(F, G)
+    end_time = time.time()
+    ellapsed = (end_time -start_time) * 1e9
+    recordTime(ellapsed, len(results), "Forward" )
+
+    print("Recursively build to satisfy homomorphism and back condition: ")
+    start_time = time.time()
+    results = check_pMorph_forward_back(F, G)
+    end_time = time.time()
+    ellapsed = (end_time -start_time) * 1e9
+    recordTime(ellapsed, len(results), "Forward and back" )
+
+    print("Recursively build using backtracking: ")
+    start_time = time.time()
+    results = check_pMorph_backtracking(F, G)
+    end_time = time.time()
+    ellapsed = (end_time -start_time) * 1e9
+    recordTime(ellapsed, len(results), "Back-tracking" )
+
+    '''
+    print("Build using Python's CSP library: ")
+    start_time = time.time()
+    results = check_pMorph_csp(F, G)
+    end_time = time.time()
+    ellapsed = (end_time -start_time) * 1e9
+    if results == None:
+        num_results = 0
+    else:
+        num_results =  len(results)
+    recordTime(ellapsed, num_results, "CSP" )
+    '''
+
+    print("Check all possible mappings: ")
+    start_time = time.time()
+    results = check_pMorph_enum(F, G)
+    end_time = time.time()
+    ellapsed = (end_time -start_time) * 1e9
+    recordTime(ellapsed, len(results), "Enumeration" )
+
+
+
+def recordTime(ellapsed, num_found, name):
+   
+    with open("times/pMorphism_times.txt", "a") as file:
+        file.write(f"\tMethod: {name}. Number of p-morphs: {num_found}. Time (ns): {ellapsed}\n")
+
+    print(f"\tMethod: {name}. Number of p-morphs: {num_found}. Time (ns): {ellapsed}\n")
+    
+    
+
 
 
 
 
 def main():
 
+
+    while True:
+        F_card = int(input("Enter |F|: "))
+        G_card = int(input("Enter |G|: "))
+    
+        F = generate_random_frame(F_card)
+        G = generate_random_frame(G_card)
+
+        print("Frame F:", F)
+        print("Frame G:", G)
+        runCompare(F,G)
+
     '''
         Known Examples
-    '''
 
+    '''
+    '''
+    
+    F = Frame(points=[0,1,2,3,4,5], relation={(0,0), (0,1),(1,2),(2,0),(3,3),(3,4),(4,5),(5,3)})
+    G = Frame(points=[0,1,2], relation={(0,0),(0,1),(1,2),(2,0)})
+    print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
+    print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+    runCompare(F,G)
+    
+
+
+    F = Frame(points=[0,1,2,3], relation={(0,1),(1,3),(0,2),(2,3),(0,3)})
+    G = Frame(points=[0,1], relation={(0,0)})
+    print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
+    print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+    runCompare(F,G)
+    
+  
     F = Frame(points=[0,1,2], relation={(0,0),(1,1),(2,2),(0,1),(1,0),(0,2),(2,0),(1,2),(2,1)})
     G = Frame(points=[0], relation={(0,0)})
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+    runCompare(F,G)
 
-    print("ELIMINATION BY FORWARD CONDITION: ")
-    f = check_pMorph_forward(F, G)
-    printIsPMorph(f) # True
+   
 
     F = Frame(points=[0,1,2,3], relation={(0,0),(3,3),(3,2), (2,1), (1,0)})
     G = Frame(points=[0,1,2,3], relation={(0,0),(0,1),(1,2),(2,3), (3,3)})
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+    runCompare(F,G)
 
-    print("ELIMINATION BY FORWARD CONDITION: ")
-    f = check_pMorph_forward(F, G)
-    printIsPMorph(f) # True
+    
+    
 
     F = Frame(points=[0,1,2,3,4], relation={(3,3),(3,2), (2,1), (1,0),(0,4)})
     G = Frame(points=[0,1,2,3], relation={(0,0),(0,1),(1,2),(2,3)})
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+    runCompare(F,G)
 
-    print("ELIMINATION BY FORWARD CONDITION: ")
-    f = check_pMorph_forward(F, G)
-    printIsPMorph(f) # True
-    
-
-    # Exercise 2.13
     F = Frame(points=['a','b','c'], relation={('a', 'b'), ('a','c')})
     G = Frame(points=['e', 'd'], relation={('d','e')})
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
-
-    print("ELIMINATION BY FORWARD CONDITION: ")
-    f = check_pMorph_forward(F, G)
-    printIsPMorph(f) # True
-    
-
-    print("CSP: ")
-    f = check_pMorph_csp(F, G)
-    printIsPMorph(f) # True
-
-
-    print("BACK-TRACKING: ")
-    f = check_pMorph_backtracking(F, G)
-    printIsPMorph(f) # True
-    
+    runCompare(F,G)
 
 
 
     F = Frame(points=[0, 1,2], relation={})
     G = Frame(points=[0,1], relation={})
-    f = check_pMorph_forward(F, G)
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
-
-    print("ELIMINATION BY FORWARD CONDITION: ")
-    f = check_pMorph_forward(F, G)
-    printIsPMorph_array(f) # True
-    
-
-    print("CSP: ")
-    f = check_pMorph_csp(F, G)
-    printIsPMorph(f) # True
-
-
-    print("BACK-TRACKING: ")
-    f = check_pMorph_backtracking(F, G)
-    printIsPMorph(f) # True
+    runCompare(F,G)
 
     F = Frame(points=[0,1,2], relation={(0, 1), (1,2)})
     G = Frame(points=[0], relation={(0,0)})
     print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
-
-    print("ELIMINATION BY FORWARD CONDITION: ")
-    f = check_pMorph_forward(F, G)
-    printIsPMorph_array(f) # False
-    
-
-    print("CSP: ")
-    f = check_pMorph_csp(F, G)
-    printIsPMorph(f) # False
-
-
-    print("BACK-TRACKING: ")
-    f = check_pMorph_backtracking(F, G)
-    printIsPMorph(f) # False
-
-
-
-
-
+    runCompare(F,G)
     '''
-        Time needed to run check_pMorph_forward(F, G)
-    '''
-
-    F_card = int(input("Enter |F|: "))
-    G_card = int(input("Enter |G|: "))
-
-    F = generate_random_frame(F_card)
-    G = generate_random_frame(G_card)
-
-    print("Frame F:", F)
-    print("Frame G:", G)
-    
-    
-    start_time = time.time()
-    f = check_pMorph_forward(F, G)
-    end_time = time.time()
-    ellapsed = (end_time -start_time) * 1e9
-    
-
-    if ellapsed != None:
-        with open("pMorphism_forward_times.txt", "a") as file:
-            file.write(f"|F| = {len(F.points)} |G| = {len(G.points)} F->->G? {f != None}\n")
-            file.write(f"\tTime (ns): {ellapsed}\n")
-    
-
-    print(f"|F| = {len(F.points)} |G| = {len(G.points)} F->->G? {f != None}\n")
-    print(f"\tTime (ns): {ellapsed}\n")
-    
-
-
-
 
 
 if __name__ == "__main__":
