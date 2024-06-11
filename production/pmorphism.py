@@ -107,36 +107,6 @@ def build_pMorph(F, G, k, f, points_F, points_G):
 
     return False
 
-def backtrack(f, F, G, assigned):
-    
-    X1 = F.points
-    X2 = G.points
-    
-    # Base case: all points in F are assigned to G. 
-    # Return whether f is p-morphism
-    if len(f) == len(X1):
-        #print(f)
-        return is_p_morphism(f, F, G)
-
-    # map x --> u where x in X1 and u in X2
-    for x in X1:
-        if x not in f: # Only consider unassigned points in X1
-            for u in X2:
-                # Don't re-assign u to x unless all points in X2 mapped
-                if u not in assigned or set(assigned) == set(X2):
-                    # Assign u to x
-                    f[x] = u
-                    assigned.append(u) 
-                    
-                    # Recursively build the mapping
-                    if backtrack(f, F, G, assigned): 
-                        return True # Found a valid p-morphism
-                    del f[x]  # Backtrack: remove the assignment
-                    assigned.remove(u)   # Backtrack: unmark u as assigned
-
-            return False  # No valid assignment found for this x
-        
-    return False  
 
 
 
