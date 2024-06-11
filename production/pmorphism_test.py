@@ -3,7 +3,7 @@ import time
 import random
 import math
 from itertools import product
-
+import os
 '''
     Defines a Frame
 
@@ -459,7 +459,6 @@ def runCompare(F,G):
 
 
 def recordTime(ellapsed, num_found, name):
-   
     with open("times/pMorphism_times.txt", "a") as file:
         file.write(f"\tMethod: {name}. Number of p-morphs: {num_found}. Time (ns): {ellapsed}\n")
 
@@ -473,7 +472,7 @@ def recordTime(ellapsed, num_found, name):
 
 def main():
 
-
+    os.makedirs("times", exist_ok=True)  
     while True:
         F_card = int(input("Enter |F|: "))
         G_card = int(input("Enter |G|: "))
