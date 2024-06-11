@@ -4,6 +4,13 @@ import random
 import math
 from itertools import product
 import os
+import sys 
+
+# Get absolute path to program's data directory
+def get_data_file_path(filename):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, filename)
+
 '''
     Defines a Frame
 
@@ -459,6 +466,7 @@ def runCompare(F,G):
 
 
 def recordTime(ellapsed, num_found, name):
+
     with open("times/pMorphism_times.txt", "a") as file:
         file.write(f"\tMethod: {name}. Number of p-morphs: {num_found}. Time (ns): {ellapsed}\n")
 
@@ -471,8 +479,11 @@ def recordTime(ellapsed, num_found, name):
 
 
 def main():
-
-    os.makedirs("times", exist_ok=True)  
+    output_path = get_data_file_path("times") 
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+        print(f"Created output directory {output_path}")
+    
     while True:
         F_card = int(input("Enter |F|: "))
         G_card = int(input("Enter |G|: "))
