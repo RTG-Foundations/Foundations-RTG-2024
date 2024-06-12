@@ -77,7 +77,6 @@ def is_p_morphism(f, F, G):
     If a valid mapping is found, return True; otherwise, backtrack.
 
 '''
-
 def build_pMorph(F, G, k, f, points_F, points_G):
     R = F.relation
     S = G.relation
@@ -101,11 +100,28 @@ def build_pMorph(F, G, k, f, points_F, points_G):
                 valid = False
                 break
 
+
+        # Back condition
+        # for all x ∈ X1, u ∈ X2 , if f(x) R2 u --> ∃ x' ∈ x1  x R1 x' and f(x') = u
+        if valid == True:
+            for i in range(k):
+                
+                for j in points_G:
+                    if (f[points_F[i]], j) in S:
+                        valid = False
+                        for p in range(n):
+                            if ((p < k) and (points_F[i],points_F[p]) in R and f[points_F[p]] == j)\
+                                or ((p >= k) and (points_F[i], points_F[p]) in R):
+                                valid = True
+                                break
+                            
+                        if valid == False:
+                            break
+
         if valid and build_pMorph(F, G, k + 1, f, points_F, points_G):
             return True
-
-
     return False
+
 
 
 

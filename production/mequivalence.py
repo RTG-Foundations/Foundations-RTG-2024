@@ -395,19 +395,30 @@ def print_mEquiv(F,G,m, result):
 
 
 def main():
-   
+
+    F = pmorphism.Frame(points=[0,1,2,3,4], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(0,4),(4,0),(1,4),(4,1),(2,4),(4,2),(3,4),(4,3)})
+    G = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(3,3)})
+
+    m = 2
+    result = mEquiv(F,G, m) # true
+    write_mEquiv(F,G,m, result)
+    
     m = 3
+    result = mEquiv(F,G, m) # false
+    write_mEquiv(F,G,m, result)
+
+
     F = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0)})
     G = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(3,3)})
-    result = mEquiv(F,G, m)
+    m = 1
+    result = mEquiv(F,G, m) # true
     write_mEquiv(F,G,m, result)
     
     m = 2
     result = mEquiv(F,G, m)
-    write_mEquiv(F,G,m, result)
+    write_mEquiv(F,G,m, result)  # false
 
 
-    
     X = {0, 1, 2, 3,4,5,6,7,8,9,10,11}
     R = {(0, 1), (1,2),(2,3),(3,4),(4,5),(5,0),(6,7),(7,8),(8,9),(9,10),(10,11),(11,6)}
     V = [{0,6}]
@@ -453,9 +464,6 @@ def main():
     eq_pts_sets, eq_R = quotient_frame(X, R, closure_V)
     print_quotient_frame(eq_pts_sets, eq_R)
 
-
-
-  
 
     m = 2
     F = pmorphism.Frame(points=[0,1,2], relation={(0, 1),(1,0),(1,2), (2,1)})
