@@ -1,21 +1,272 @@
-|F| = 5 |G| = 4
-	Method: Forward. Number of p-morphs: 0. Time (s): 0.005797624588012695
-	Method: Forward and back. Number of p-morphs: 0. Time (s): 0.004255771636962891
-	Method: Back-tracking. Number of p-morphs: 0. Time (s): 0.002546072006225586
-	Method: CSP. Number of p-morphs: 0. Time (s): 0.04800748825073242
-	Method: Enumeration. Number of p-morphs: 0. Time (s): 0.012368202209472656
-
-|F| = 5 |G| = 4
-	Method: Forward. Number of p-morphs: 0. Time (s): 0.00513458251953125
-	Method: Forward and back. Number of p-morphs: 0. Time (s): 0.00744938850402832
-	Method: Back-tracking. Number of p-morphs: 0. Time (s): 0.0015189647674560547
-	Method: CSP. Number of p-morphs: 0. Time (s): 0.03695249557495117
-	Method: Enumeration. Number of p-morphs: 0. Time (s): 0.010436773300170898
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 40400505.06591797
+	Method: Forward and back. Number of p-morphs: 24. Time (ns): 23669004.440307617
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 24948120.1171875
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 1464702844.619751
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 684700012.2070312
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 270203828.8116455
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 238484382.62939453
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 29260157346.725464
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 20204782.485961914
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 10203361.511230469
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 229592084.88464355
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 29099848747.253418
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 51676750.18310547
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 13101816.177368164
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 231251716.61376953
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 28204306125.64087
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 96381187.43896484
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 0.0
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 210240364.07470703
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 26161806821.82312
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 50039529.80041504
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 60112953.186035156
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 220034599.30419922
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 275012254.7149658
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 370742559.4329834
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 214448451.9958496
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 14336109.161376953
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 5815982.818603516
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 49876451.49230957
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 18519906759.262085
+|F| = 8 |G| = 7
+	Method: Forward. Number of p-morphs: 0. Time (ns): 585079669.9523926
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 699664115.9057617
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 225056886.67297363
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 27811050.415039062
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 7691621.780395508
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 758299827.5756836
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 816457986.831665
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 23379802.703857422
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 6492137.908935547
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 794950723.6480713
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 843856334.6862793
+|F| = 1 |G| = 1
+	Method: Forward. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Forward and back. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Back-tracking. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Enumeration. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 0. Time (ns): 24516820.907592773
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 24080991.744995117
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 743235588.0737305
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 801657676.6967773
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 0. Time (ns): 100096702.5756836
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 360360383.98742676
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 746605157.8521729
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 791087388.9923096
+|F| = 2 |G| = 1
+	Method: Forward. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 2 |G| = 1
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 2 |G| = 1
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 2 |G| = 1
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Forward. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Forward and back. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Back-tracking. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 1 |G| = 1
+	Method: Enumeration. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Forward. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 649452.2094726562
+|F| = 2 |G| = 2
+	Method: Forward. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Forward and back. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Back-tracking. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 2 |G| = 2
+	Method: Enumeration. Number of p-morphs: 1. Time (ns): 0.0
+|F| = 3 |G| = 3
+	Method: Forward. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 3 |G| = 3
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 3 |G| = 3
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 3 |G| = 3
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 25424718.856811523
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 8491516.11328125
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 758253574.3713379
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 808881998.0621338
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 29672861.099243164
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 29857397.079467773
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 7421016.693115234
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 753234863.28125
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 799574375.1525879
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 23340940.475463867
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 36. Time (ns): 26651620.864868164
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 740441083.908081
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 789819478.9886475
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 28120040.893554688
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 766657114.0289307
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 804009914.3981934
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 25979518.89038086
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 7828950.881958008
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 746188402.1759033
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 800450325.012207
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 31473875.045776367
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 5765914.9169921875
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 761490345.0012207
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 837250232.6965332
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 158437728.88183594
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 50447940.826416016
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 1670573472.9766846
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 1766013383.8653564
 |F| = 10 |G| = 8
-	Method: Forward. Number of p-morphs: 0. Time (s): 2.0192131996154785
-	Method: Forward and back. Number of p-morphs: 0. Time (s): 0.8657839298248291
-	Method: Back-tracking. Number of p-morphs: 0. Time (s): 29.798819303512573
+	Method: Forward. Number of p-morphs: 0. Time (ns): 11905073642.730713
 |F| = 10 |G| = 8
-	Method: Forward. Number of p-morphs: 0. Time (ns): 35293793916.70227
-	Method: Forward and back. Number of p-morphs: 0. Time (ns): 2763770580.291748
-	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 29338980436.325073
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 3494971036.9110107
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 102561473.84643555
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 57540655.1361084
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 1977326631.5460205
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 1991475820.5413818
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 83501577.37731934
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 67297697.06726074
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 1867707014.0838623
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 1986517190.9332275
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 68783998.48937988
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 41181564.33105469
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 1651393651.9622803
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 1645025014.8773193
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 84249734.87854004
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 59490919.11315918
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 1701462745.666504
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 1827894687.652588
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 35449981.689453125
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 11526346.206665039
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 737817525.8636475
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 791982889.175415
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 38579463.958740234
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 11232376.098632812
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 745473861.6943359
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 801274776.4587402
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 28026103.973388672
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 11876583.099365234
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 766116619.1101074
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 801159858.7036133
+|F| = 5 |G| = 4
+	Method: Forward. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 5 |G| = 4
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 15606403.350830078
+|F| = 5 |G| = 4
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 5 |G| = 4
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 7229804.992675781
+|F| = 5 |G| = 4
+	Method: Forward. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 5 |G| = 4
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 0.0
+|F| = 5 |G| = 4
+	Method: Back-tracking. Number of p-morphs: 0. Time (ns): 12822389.602661133
+|F| = 5 |G| = 4
+	Method: Enumeration. Number of p-morphs: 0. Time (ns): 3418445.587158203
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 25614738.46435547
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 0. Time (ns): 1608371.7346191406
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 750621795.6542969
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 807850837.7075195
+|F| = 7 |G| = 6
+	Method: Forward. Number of p-morphs: 36. Time (ns): 28757810.592651367
+|F| = 7 |G| = 6
+	Method: Forward and back. Number of p-morphs: 36. Time (ns): 78042030.33447266
+|F| = 7 |G| = 6
+	Method: Back-tracking. Number of p-morphs: 36. Time (ns): 738616228.1036377
+|F| = 7 |G| = 6
+	Method: Enumeration. Number of p-morphs: 36. Time (ns): 791982173.9196777

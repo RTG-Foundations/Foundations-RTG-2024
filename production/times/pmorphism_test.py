@@ -3,13 +3,6 @@ import time
 import random
 import math
 from itertools import product
-import os
-import sys 
-
-# Get absolute path to program's data directory
-def get_data_file_path(filename):
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, filename)
 
 '''
     Defines a Frame
@@ -164,24 +157,15 @@ def pMorphForwardBack(F, G, k, f, points_F, points_G, results):
 
         # Back condition
         # for all x ∈ X1, u ∈ X2 , if f(x) R2 u --> ∃ x' ∈ x1  x R1 x' and f(x') = u
-        if valid == True:
-            for i in range(k):
-                
-                for j in points_G:
-                    if (f[points_F[i]], j) in S:
-                        valid = False
-                        for p in range(n):
-                            if ((p < k) and (points_F[i],points_F[p]) in R and f[points_F[p]] == j):
-                                valid = True
-                                break
-                            elif ((p >= k) and (points_F[i], points_F[p]) in R):
-                                valid = True
-                                break
-                            
-                        if valid == False:
-                            print("BACK CONDITION BROKE")
-                            break
-                        
+        
+            if (f[points_F[k]], f[points_F[i]]) in S:
+                if not any((points_F[k], points_F[j]) in R and f[points_F[j]] == f[points_F[i]] for j in range(k)):
+                    valid = False
+                    break
+            if (f[points_F[i]], f[points_F[k]]) in S:
+                if not any((points_F[j], points_F[k]) in R and f[points_F[j]] == f[points_F[i]] for j in range(k)):
+                    valid = False
+                    break
         
         if valid:
             pMorphForwardBack(F, G, k + 1, f,  points_F, points_G, results)
@@ -362,16 +346,17 @@ def backtrack(f, F, G, assigned, results):
     for x in X1:
         if x not in f: # Only consider unassigned points in X1
             for u in X2:
-    
-                # Assign u to x
-                f[x] = u
-                assigned.append(u) 
-                
-                # Recursively build the mapping
-                backtrack(f, F, G, assigned, results)
+                # Don't re-assign u to x unless all points in X2 mapped
+                if u not in assigned or set(assigned) == set(X2):
+                    # Assign u to x
+                    f[x] = u
+                    assigned.append(u) 
                     
-                del f[x]  # Backtrack: remove the assignment
-                assigned.remove(u)   # Backtrack: unmark u as assigned
+                    # Recursively build the mapping
+                    backtrack(f, F, G, assigned, results)
+                       
+                    del f[x]  # Backtrack: remove the assignment
+                    assigned.remove(u)   # Backtrack: unmark u as assigned
 
             return results # No valid assignment found for this x
         
@@ -389,7 +374,7 @@ def check_pMorph_backtracking(F, G):
     results = []
     results = backtrack(f, F, G, assigned, results)
     return results
-
+    
 '''
     ENUMERATION
 '''
@@ -426,27 +411,30 @@ def check_pMorph_enum(F, G):
 '''
 def runCompare(F,G):
 
+    with open("times/pMorphism_times.txt", "a") as file:
+        file.write(f"|F| = {len(F.points)} |G| = {len(G.points)}\n")
+
+
     print("Recursively build to satisfy homomorphism condition: ")
     start_time = time.time()
     results = check_pMorph_forward(F, G)
     end_time = time.time()
     ellapsed = (end_time -start_time) * 1e9
-    recordTime(ellapsed, len(results), len(F.points), len(G.points), "Forward" )
+    recordTime(ellapsed, len(results), "Forward" )
 
     print("Recursively build to satisfy homomorphism and back condition: ")
     start_time = time.time()
     results = check_pMorph_forward_back(F, G)
     end_time = time.time()
     ellapsed = (end_time -start_time) * 1e9
-    recordTime(ellapsed, len(results), len(F.points), len(G.points), "Forward and back" )
+    recordTime(ellapsed, len(results), "Forward and back" )
 
     print("Recursively build using backtracking: ")
     start_time = time.time()
     results = check_pMorph_backtracking(F, G)
     end_time = time.time()
     ellapsed = (end_time -start_time) * 1e9
-    recordTime(ellapsed, len(results), len(F.points), len(G.points), "Back-tracking" )
-
+    recordTime(ellapsed, len(results), "Back-tracking" )
 
     '''
     print("Build using Python's CSP library: ")
@@ -466,14 +454,13 @@ def runCompare(F,G):
     results = check_pMorph_enum(F, G)
     end_time = time.time()
     ellapsed = (end_time -start_time) * 1e9
-    recordTime(ellapsed, len(results), len(F.points), len(G.points),"Enumeration" )
+    recordTime(ellapsed, len(results), "Enumeration" )
 
 
 
-def recordTime(ellapsed, num_found, F_card, G_card, name):
-
+def recordTime(ellapsed, num_found, name):
+   
     with open("times/pMorphism_times.txt", "a") as file:
-        file.write(f"|F| = {F_card} |G| = {G_card}\n")
         file.write(f"\tMethod: {name}. Number of p-morphs: {num_found}. Time (ns): {ellapsed}\n")
 
     print(f"\tMethod: {name}. Number of p-morphs: {num_found}. Time (ns): {ellapsed}\n")
@@ -485,19 +472,8 @@ def recordTime(ellapsed, num_found, F_card, G_card, name):
 
 
 def main():
-    
-    F = Frame(points=[0,1,2,3,4,5,6], relation={(1,3),(6,4)})
-    G = Frame(points=[0,1,2,3,4,5], relation={(5,4),(3,2)})
-    print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
-    print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
-    runCompare(F,G)
-    
-    
-    output_path = get_data_file_path("times") 
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
-        print(f"Created output directory {output_path}")
-    
+
+
     while True:
         F_card = int(input("Enter |F|: "))
         G_card = int(input("Enter |G|: "))
