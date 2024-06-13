@@ -1,6 +1,5 @@
 '''
-    GUI application 
-
+    Import libraries
 '''
 
 import os
@@ -17,10 +16,13 @@ from PyQt5.QtCore import QThread, pyqtSignal
 import closures
 import modalFormula
 
-
-
 from settings_ui import Ui_Settings
 
+
+
+'''
+    Loads and runs the JSON file
+'''
 # Get absolute path to program's data directory
 def get_data_file_path(filename):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
@@ -50,6 +52,29 @@ def execute_methods(setup, program):
             results.append((method_name, f"Error calling {method_name}: {e}"))
     
     return results
+
+
+'''
+    
+    Background task for running methods
+    Extends the QThread class to perform tasks asynchronously.
+
+'''
+class RunMethods(QThread):
+    success = pyqtSignal(object)
+    fail = pyqtSignal(str)
+    
+    def __init__(self, program, setup):
+        super().__init__()
+        self.program = program
+        self.setup = setup
+
+    def run(self):
+        try:
+            results = execute_methods(self.setup, self.program)
+            self.success.emit(self.setup,results)
+        except Exception as e:
+            self.fail.emit(str(e))
 
 
 
@@ -85,10 +110,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.runFormula_pushButton.clicked.connect(self.run_formula_methods) 
 
 
-        #self.nFormula_spinBox.valueChanged['int'].connect(self.nChanged)
-        #self.runClosures_pushButton.clicked.connect(self.run_closure_methods) 
-        #self.nClosure_spinBox.setMinimum(1)
-        
         # Create the scroll widget for the output log
         self.scroll_widget = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_widget)
@@ -108,19 +129,20 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
    
     def run_closure_methods(self):
+        
+        # Get variables
         n = self.nClosure_spinBox.value()
         l = self.l_spinBox.value()
         
-        # Construct R from the text boxes
         R = []
         for i, (label, text_box) in enumerate(self.R_closure_inputs):
             y_values = text_box.text().split()
             for y in y_values:
                 R.append([i, int(y)])
         
+
+        # Create JSON
         selected_methods = []
-        
-    
         if self.reflex_checkBox.isChecked():
             selected_methods.append({"name": "reflexive_closure", "params": ["n", "R"]})
         if self.sym_checkBox.isChecked():
@@ -134,7 +156,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         if self.subframe_checkBox.isChecked():
             selected_methods.append({"name": "find_subframe", "params": ["n", "l", "R"]})
         
-        setup = {
+        mysetup = {
             "parameters": {
                 "n": n,
                 "R": R,
@@ -143,41 +165,54 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             "methods": selected_methods
         }
         
-        # Save setup to a JSON file
         setup_file_path = "closure_setup.json"
         with open(setup_file_path, 'w') as f:
-            json.dump(setup, f, indent=4)
+            json.dump(mysetup, f, indent=4)
         
-        # Execute methods
-        try:
-            results = execute_methods(setup, closures)
-            # Write output to output.txt
-            file = get_data_file_path('closure_output.txt')
-            with open(file, 'a') as f:
-                f.write(f"N = {n} R ={R}\n")
-                for method_name, result in results:
-                    f.write(f"{method_name}: {result}\n")
-                    self.writeToLog(f"{method_name}: {result}")
-                f.write("****************************************************************\n\n")
-            self.writeToLog(f"Wrote output to {file}")
-        except Exception as e:
-            self.writeToLog(e)
+        # Thread to execute methods
+        self.closure = RunMethods(program=closures, setup= mysetup)
+        self.closure.success.connect(self.writeclosureOutput)  
+        self.closure.fail.connect(self.taskFailed) 
+        self.closure.start()
+
+    
+    def writeclosureOutput(self, results):
+
+        parameters = setup["parameters"]
+        methods = setup["methods"]
+        results = []
+        
+        for method in methods:
+            method_name = method["name"]
+            params = [parameters[param] for param in method["params"]]
+
+
+        file = get_data_file_path('closure_output.txt')
+        with open(file, 'a') as f:
+            #f.write(f"N = {n} R ={R}\n")
+            for method_name, result in results:
+                f.write(f"{method_name}: {result}\n")
+                self.writeToLog(f"{method_name}: {result}")
+            f.write("****************************************************************\n\n")
+        self.writeToLog(f"Wrote output to {file}")
+
+
+    def taskFailed(self, e):
+        self.writeToLog(f"{e}")
+
 
 
     def run_formula_methods(self):
-
-        phi = self.formula_lineEdit.text()
-
-        n = self.nFormula_spinBox.value()
         
+        # Get variables
+        phi = self.formula_lineEdit.text()
+        n = self.nFormula_spinBox.value()
         # R 
         R = []
         for i, (label, text_box) in enumerate(self.R_formula_inputs):
             y_values = text_box.text().split()
             for y in y_values:
                 R.append([i, int(y)])
-        
-    
         # V 
         V = {}
         for prop, text_box in self.V_formula_inputs.items():
@@ -186,12 +221,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             for world in worlds:
                 V[prop].add(world)
         
-        # Convert V to a JSON-serializable format
+        # Create JSON file
         V_serializable = {k: list(v) for k, v in V.items()}
-
         selected_methods = []
-        
-    
         if self.subformulas_radioButton.isChecked():
             selected_methods.append({"name": "find_subformulas", "params": ["phi"]})
         if self.sValid_radioButton.isChecked():
@@ -199,9 +231,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         if self.findX_radioButton.isChecked():
             selected_methods.append({"name": "get_satisfying_points_ast", "params": ["phi", "n", "R", "V"]})
 
-       
-       
-        setup = {
+        mysetup = {
             "parameters": {
                 "phi": phi,
                 "n": n,
@@ -211,26 +241,27 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             "methods": selected_methods
         }
         
-        # Save setup to a JSON file
         setup_file_path = "formula_setup.json"
         with open(setup_file_path, 'w') as f:
-            json.dump(setup, f, indent=4)
-        
-        # Execute methods
-        try:
-            results = execute_methods(setup, modalFormula)
-            # Write output to output.txt
-            file = get_data_file_path('formula_output.txt')
-            with open(file, 'a') as f:
-                f.write(f"phi = {phi}\nn ={n}\nR ={R}\nV={V}\n")
-                for method_name, result in results:
-                    f.write(f"{method_name}: {result}\n")
-                    self.writeToLog(f"{method_name}: {result}\n")
-                f.write("****************************************************************\n\n")
-            self.writeToLog(f"Wrote output to {file}")
-        except Exception as e:
-            self.writeToLog(e)
+            json.dump(mysetup, f, indent=4)
 
+        # Thread to execute methods
+        self.formula = RunMethods(program=modalFormula, setup= mysetup)
+        self.formula.success.connect(self.writeFormulaOutput)  
+        self.formula.fail.connect(self.taskFailed) 
+        self.formula.start()
+
+
+    def writeFormulaOutput(self, results):
+        file = get_data_file_path('formula_output.txt')
+        with open(file, 'a') as f:
+            #f.write(f"phi = {phi}\nn ={n}\nR ={R}\nV={V}\n")
+            for method_name, result in results:
+                f.write(f"{method_name}: {result}\n")
+                self.writeToLog(f"{method_name}: {result}\n")
+            f.write("****************************************************************\n\n")
+            self.writeToLog(f"Wrote output to {file}")
+        
     
     def check_formula_for_params(self):
         
@@ -272,15 +303,10 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Set the content widget with the new layout to the scroll area
         scrollArea.setWidget(content_widget)
 
-        
 
-    
-        
     
     def nChanged(self, n, type):
 
-
-        
         # Clear any existing widgets from the layout
         if type == "closure":
             # Xn label
@@ -298,7 +324,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             self.R_formula_inputs = []
         else:
             raise ValueError(f"nChanged called on invalid type {type}")
-        
         
         layout = scrollArea.layout()
         
