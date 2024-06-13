@@ -57,9 +57,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.setupUi(self)
 
         # connect N
-        self.N_spinBox.valueChanged['int'].connect(self.nChanged)
-        self.runClosures_pushButton.clicked.connect(self.run_methods) 
-        self.N_spinBox.setMinimum(1)
+        self.nClosure_spinBox.valueChanged['int'].connect(self.nChanged)
+        self.runClosures_pushButton.clicked.connect(self.run_closure_methods) 
+        self.nClosure_spinBox.setMinimum(1)
 
         
         # Create the scroll widget for the output log
@@ -71,8 +71,8 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         
       
    
-    def run_methods(self):
-        n = self.N_spinBox.value()
+    def run_closure_methods(self):
+        n = self.nClosure_spinBox.value()
         l = self.l_spinBox.value()
         
         # Construct R from the text boxes
@@ -139,7 +139,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
         
         # Clear any existing widgets from the layout
-        layout = self.R_scrollArea.layout()
+        layout = self.RClosure_scrollArea.layout()
         if layout is not None:
             while layout.count():
                 item = layout.takeAt(0)
@@ -155,7 +155,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.R_inputs = []
 
         
-        # Populate the layout with new label-text box pairs
+        # Populate the layout with label-text box pairs
         for i in range(n):
             row_layout = QHBoxLayout()  # Create a horizontal layout for each label-text box pair
 
@@ -169,7 +169,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             self.R_inputs.append((label, text_box))
 
         # Set the content widget with the new layout to the scroll area
-        self.R_scrollArea.setWidget(content_widget)
+        self.RClosure_scrollArea.setWidget(content_widget)
 
         
 
