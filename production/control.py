@@ -61,7 +61,7 @@ def execute_methods(setup, program):
 
 '''
 class RunMethods(QThread):
-    success = pyqtSignal(object)
+    success = pyqtSignal(object, object)
     fail = pyqtSignal(str)
     
     def __init__(self, program, setup):
@@ -176,20 +176,17 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.closure.start()
 
     
-    def writeclosureOutput(self, results):
-
-        parameters = setup["parameters"]
-        methods = setup["methods"]
-        results = []
-        
-        for method in methods:
-            method_name = method["name"]
-            params = [parameters[param] for param in method["params"]]
-
+    def writeclosureOutput(self, setup, results):
 
         file = get_data_file_path('closure_output.txt')
         with open(file, 'a') as f:
-            #f.write(f"N = {n} R ={R}\n")
+            # Write the parameters from the setup
+            f.write("Parameters:\n")
+            for param, value in setup["parameters"].items():
+                f.write(f"{param}: {value}\n")
+            
+            # Write results
+            f.write("\nResults:\n")
             for method_name, result in results:
                 f.write(f"{method_name}: {result}\n")
                 self.writeToLog(f"{method_name}: {result}")
@@ -252,16 +249,25 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.formula.start()
 
 
-    def writeFormulaOutput(self, results):
+    def writeFormulaOutput(self, setup, results):
         file = get_data_file_path('formula_output.txt')
         with open(file, 'a') as f:
-            #f.write(f"phi = {phi}\nn ={n}\nR ={R}\nV={V}\n")
-            for method_name, result in results:
-                f.write(f"{method_name}: {result}\n")
-                self.writeToLog(f"{method_name}: {result}\n")
-            f.write("****************************************************************\n\n")
+            # Write the parameters from the setup
+            f.write("Parameters:\n")
+            for param, value in setup["parameters"].items():
+                f.write(f"{param}: {value}\n")
+            
+            f.write("\nResults:\n")
+            
+            # Write the results from the methods
+            with open(file, 'a') as f:
+                for method_name, result in results:
+                    f.write(f"{method_name}: {result}\n")
+                    self.writeToLog(f"{method_name}: {result}")
+                f.write("****************************************************************\n\n")
             self.writeToLog(f"Wrote output to {file}")
-        
+            
+
     
     def check_formula_for_params(self):
         
