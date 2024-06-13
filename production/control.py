@@ -57,9 +57,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.setupUi(self)
 
         # connect N
-        self.N_spinBox.setMinimum(1)
         self.N_spinBox.valueChanged['int'].connect(self.nChanged)
         self.runClosures_pushButton.clicked.connect(self.run_methods) 
+        self.N_spinBox.setMinimum(1)
 
         
         # Create the scroll widget for the output log
@@ -68,6 +68,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.log_scrollArea.setWidgetResizable(True)
         self.log_scrollArea.setWidget(self.scroll_widget)
 
+        
       
    
     def run_methods(self):
@@ -112,16 +113,22 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             json.dump(setup, f, indent=4)
         
         # Execute methods
-        results = execute_methods(setup)
+        try:
+            results = execute_methods(setup)
+            # Write output to output.txt
+            file = get_data_file_path('closure_output.txt')
+            with open(file, 'a') as f:
+                f.write(f"N = {n} R ={R}\n")
+                for method_name, result in results:
+                    f.write(f"{method_name}: {result}\n")
+                    self.writeToLog(f"{method_name}: {result}\n")
+                f.write("****************************************************************\n\n")
+            self.writeToLog(f"Wrote output to {file}")
+        except Exception as e:
+            self.writeToLog(e)
+
         
-        # Write output to output.txt
-        file = get_data_file_path('closure_output.txt')
-        with open(file, 'a') as f:
-            for method_name, result in results:
-                f.write(f"{method_name}: {result}\n")
-                self.writeToLog(f"{method_name}: {result}\n")
-            self.writeToLog(f"{method_name}: {result}\n")
-        self.writeToLog(f"Wrote output to {file}")
+        
     
     def nChanged(self, n):
 

@@ -275,7 +275,7 @@ def execute_methods(setup):
 
 '''
 def main():
-
+    
     if len(sys.argv) != 2:
         print("Usage: python script.py <setup_file_path>")
         sys.exit(1)
@@ -287,7 +287,7 @@ def main():
     for method_name, result in results:
            print(f"{method_name}: {result}\n")
 
-
+   
     '''
         Calculate the closures
     '''
