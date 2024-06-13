@@ -23,7 +23,8 @@ During parsing, stores the formula s as an abstract syntax tree, which can be ev
 
 '''
 
-
+import sys
+import json
 import re # for matching regular expressions
 from itertools import product
 
@@ -302,12 +303,10 @@ def evaluate_formula_ast(node, x, R, V):
 def find_subformulas(input_str):
     tokens = Tokenizer(input_str).tokenize()
     parser = Parser(tokens)
-    try:
-        ast, subformulas, propositions = parser.parse()
-        return subformulas
-    except Exception as e:
-        print(e)
-        return None
+    
+    ast, subformulas, propositions = parser.parse()
+    return subformulas
+    
    
 
 '''
@@ -326,11 +325,9 @@ def find_subformulas(input_str):
 def get_satisfying_points_ast(phi, n, R, V):
     tokens = Tokenizer(phi).tokenize()
     parser = Parser(tokens)
-    try:
-        ast, subformulas, propositions = parser.parse()
-    except Exception as e:
-        print(e)
-        return({})
+    
+    ast, subformulas, propositions = parser.parse()
+    
 
     # Write the R as dictionary,  
     # where each key is a node, and each 
@@ -363,11 +360,9 @@ def is_formula_valid_in_model(phi, n, R):
     # parse formula
     tokens = Tokenizer(phi).tokenize()
     parser = Parser(tokens)
-    try:
-        ast, subformulas, propositions = parser.parse()
-    except Exception as e:
-        print(e)
-        return False
+    
+    ast, subformulas, propositions = parser.parse()
+    
 
     # Write the R as dictionary,  
     # where each key is a node, and each 
@@ -379,7 +374,7 @@ def is_formula_valid_in_model(phi, n, R):
         graph[a].append(b)  # R
 
     # generate list of all valuations
-    print(len(generate_all_valuations(propositions, n)))
+    #print(len(generate_all_valuations(propositions, n)))
     for V in generate_all_valuations(propositions, n):
         for x in range(n):
             if not(evaluate_formula_ast(ast, x, graph, V)):
@@ -422,9 +417,53 @@ def generate_all_valuations(variables, n):
     return valuations
 
 
+'''
+    Read and execute JSON File
+'''
+# Load the setup file
+def load_setup_file(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
 
+# Execute methods based on setup file
+def execute_methods(setup):
+    parameters = setup["parameters"]
+    methods = setup["methods"]
+    results = []
+    
+    for method in methods:
+        method_name = method["name"]
+        params = [parameters[param] for param in method["params"]]
+        try:
+            # Dynamically call the method from control module with the parameters
+            result = getattr(sys.modules[__name__], method_name)(*params)
+            results.append((method_name, result))  # Append tuple of (method_name, result)
+        except AttributeError:
+            results.append((method_name, f"Method {method_name} not found in control module."))
+        except Exception as e:
+            results.append((method_name, f"Error calling {method_name}: {e}"))
+    
+    return results
+
+
+'''
+    Takes JSON file as an argument
+'''
 def main():
 
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <setup_file_path>")
+        sys.exit(1)
+    
+    setup_file_path = sys.argv[1]
+    setup = load_setup_file(setup_file_path)
+    results = execute_methods(setup)
+
+    for method_name, result in results:
+           print(f"{method_name}: {result}\n")
+
+
+    '''
     # Exercise 2.9 b
     expression = '♢(♢(p1 -->  ⊥)) --> p2'
     print(f"{expression}\n{find_subformulas(expression)}\n")  
@@ -503,7 +542,7 @@ def main():
     f"Xn= {', '.join(str(num) for num in range(n))}\n" 
     f"R={R}") 
     print(f"Is valid: {is_formula_valid_in_model(phi, n, R)}\n")  
-
+    '''
   
 
 

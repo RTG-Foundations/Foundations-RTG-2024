@@ -3,15 +3,21 @@
 
 '''
 
-
+import os
+import re
 import sys
 import json
+import datetime as dt
+
 from PyQt5.QtWidgets import ( QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QScrollArea, QCheckBox)
 from PyQt5.QtCore import QThread, pyqtSignal
-import datetime as dt
+
+# Programs
 import closures
-import os
+import modalFormula
+
+
 
 from settings_ui import Ui_Settings
 
@@ -26,7 +32,7 @@ def load_setup_file(file_path):
         return json.load(file)
 
 # Execute methods based on setup file
-def execute_methods(setup):
+def execute_methods(setup, program):
     parameters = setup["parameters"]
     methods = setup["methods"]
     results = []
@@ -36,7 +42,7 @@ def execute_methods(setup):
         params = [parameters[param] for param in method["params"]]
         try:
             # Dynamically call the method from control module with the parameters
-            result = getattr(closures, method_name)(*params)
+            result = getattr(program, method_name)(*params)
             results.append((method_name, result))  # Append tuple of (method_name, result)
         except AttributeError:
             results.append((method_name, f"Method {method_name} not found in control module."))
@@ -56,11 +62,32 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         Ui_Settings.__init__(self)
         self.setupUi(self)
 
-        # connect N
-        self.nClosure_spinBox.valueChanged['int'].connect(self.nChanged)
+
+        '''
+            Connect Buttons
+        '''
+        
+        # closure
+        self.nClosure_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "closure"))
         self.runClosures_pushButton.clicked.connect(self.run_closure_methods) 
         self.nClosure_spinBox.setMinimum(1)
+        
+        # formula
+        self.nFormula_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "formula"))
+        self.nFormula_spinBox.setMinimum(1)
 
+        self.arrow_pushButton.clicked.connect(lambda: self.appendFormula("arrow"))
+        self.diamond_pushButton.clicked.connect(lambda: self.appendFormula("diamond"))
+        self.false_pushButton.clicked.connect(lambda: self.appendFormula("false"))
+
+        self.formula_lineEdit.textChanged.connect(self.check_formula_for_params)
+
+        self.runFormula_pushButton.clicked.connect(self.run_formula_methods) 
+
+
+        #self.nFormula_spinBox.valueChanged['int'].connect(self.nChanged)
+        #self.runClosures_pushButton.clicked.connect(self.run_closure_methods) 
+        #self.nClosure_spinBox.setMinimum(1)
         
         # Create the scroll widget for the output log
         self.scroll_widget = QWidget()
@@ -68,8 +95,17 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.log_scrollArea.setWidgetResizable(True)
         self.log_scrollArea.setWidget(self.scroll_widget)
 
-        
-      
+    
+    def appendFormula(self, symbol):
+        current_text = self.formula_lineEdit.text()
+        if (symbol == "arrow"):
+            self.formula_lineEdit.setText(current_text + "-->")
+        elif (symbol == "diamond"):
+            self.formula_lineEdit.setText(current_text + "♢")
+        elif (symbol == "false"):
+            self.formula_lineEdit.setText(current_text + "⊥")
+
+
    
     def run_closure_methods(self):
         n = self.nClosure_spinBox.value()
@@ -77,7 +113,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         
         # Construct R from the text boxes
         R = []
-        for i, (label, text_box) in enumerate(self.R_inputs):
+        for i, (label, text_box) in enumerate(self.R_closure_inputs):
             y_values = text_box.text().split()
             for y in y_values:
                 R.append([i, int(y)])
@@ -114,11 +150,79 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         
         # Execute methods
         try:
-            results = execute_methods(setup)
+            results = execute_methods(setup, closures)
             # Write output to output.txt
             file = get_data_file_path('closure_output.txt')
             with open(file, 'a') as f:
                 f.write(f"N = {n} R ={R}\n")
+                for method_name, result in results:
+                    f.write(f"{method_name}: {result}\n")
+                    self.writeToLog(f"{method_name}: {result}")
+                f.write("****************************************************************\n\n")
+            self.writeToLog(f"Wrote output to {file}")
+        except Exception as e:
+            self.writeToLog(e)
+
+
+    def run_formula_methods(self):
+
+        phi = self.formula_lineEdit.text()
+
+        n = self.nFormula_spinBox.value()
+        
+        # R 
+        R = []
+        for i, (label, text_box) in enumerate(self.R_formula_inputs):
+            y_values = text_box.text().split()
+            for y in y_values:
+                R.append([i, int(y)])
+        
+    
+        # V 
+        V = {}
+        for prop, text_box in self.V_formula_inputs.items():
+            V[prop] = set()
+            worlds = text_box.text().split()
+            for world in worlds:
+                V[prop].add(world)
+        
+        # Convert V to a JSON-serializable format
+        V_serializable = {k: list(v) for k, v in V.items()}
+
+        selected_methods = []
+        
+    
+        if self.subformulas_radioButton.isChecked():
+            selected_methods.append({"name": "find_subformulas", "params": ["phi"]})
+        if self.sValid_radioButton.isChecked():
+            selected_methods.append({"name": "is_formula_valid_in_model", "params": ["phi", "n", "R"]})
+        if self.findX_radioButton.isChecked():
+            selected_methods.append({"name": "get_satisfying_points_ast", "params": ["phi", "n", "R", "V"]})
+
+       
+       
+        setup = {
+            "parameters": {
+                "phi": phi,
+                "n": n,
+                "R": R,
+                "V": V_serializable
+            },
+            "methods": selected_methods
+        }
+        
+        # Save setup to a JSON file
+        setup_file_path = "formula_setup.json"
+        with open(setup_file_path, 'w') as f:
+            json.dump(setup, f, indent=4)
+        
+        # Execute methods
+        try:
+            results = execute_methods(setup, modalFormula)
+            # Write output to output.txt
+            file = get_data_file_path('formula_output.txt')
+            with open(file, 'a') as f:
+                f.write(f"phi = {phi}\nn ={n}\nR ={R}\nV={V}\n")
                 for method_name, result in results:
                     f.write(f"{method_name}: {result}\n")
                     self.writeToLog(f"{method_name}: {result}\n")
@@ -127,19 +231,77 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         except Exception as e:
             self.writeToLog(e)
 
+    
+    def check_formula_for_params(self):
         
+        formula_text = self.formula_lineEdit.text()
+        
+        # Find all unique matches of "p\d+"
+        matches = set(re.findall(r'p\d+', formula_text))
+
+        # Clear existing widgits from layout
+        scrollArea = self.VFormula_scrollArea
+        layout = scrollArea.layout()
+
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+
+        # Create a new layout for the scroll area content
+        content_widget = QWidget()
+        self.V_layout = QVBoxLayout(content_widget)
+        self.V_formula_inputs = {}
+
+        # Populate the layout with label-text box pairs
+        for prop in list(matches):
+            self.V_formula_inputs[prop] = []
+            row_layout = QHBoxLayout() 
+
+            label = QLabel(f'{prop}')
+            text_box = QLineEdit()
+            
+            row_layout.addWidget(label)
+            row_layout.addWidget(text_box)
+            
+            self.V_layout.addLayout(row_layout)
+            self.V_formula_inputs[prop] = text_box
+
+        # Set the content widget with the new layout to the scroll area
+        scrollArea.setWidget(content_widget)
+
+        
+
+    
         
     
-    def nChanged(self, n):
+    def nChanged(self, n, type):
 
-        # Xn label
-        numbers = [str(num) for num in range(n)]
-        formatted_numbers = '\n\t'.join(', '.join(numbers[i:i+10]) for i in range(0, len(numbers), 10))
-        self.Xn_label.setText(f"Xn= {{\t{formatted_numbers}\t}}")
 
         
         # Clear any existing widgets from the layout
-        layout = self.RClosure_scrollArea.layout()
+        if type == "closure":
+            # Xn label
+            numbers = [str(num) for num in range(n)]
+            formatted_numbers = '\n\t'.join(', '.join(numbers[i:i+10]) for i in range(0, len(numbers), 10))
+            if type == "closure":
+                self.Xn_label.setText(f"Xn= {{\t{formatted_numbers}\t}}")
+
+            scrollArea = self.RClosure_scrollArea
+            self.R_closure_inputs = []
+
+
+        elif type == "formula":
+            scrollArea = self.RFormula_scrollArea
+            self.R_formula_inputs = []
+        else:
+            raise ValueError(f"nChanged called on invalid type {type}")
+        
+        
+        layout = scrollArea.layout()
+        
         if layout is not None:
             while layout.count():
                 item = layout.takeAt(0)
@@ -152,8 +314,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Create a new layout for the scroll area content
         content_widget = QWidget()
         self.R_layout = QVBoxLayout(content_widget)
-        self.R_inputs = []
-
+        
         
         # Populate the layout with label-text box pairs
         for i in range(n):
@@ -166,10 +327,15 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             row_layout.addWidget(text_box)
             
             self.R_layout.addLayout(row_layout)
-            self.R_inputs.append((label, text_box))
+            
+            if type == "closure":
+                self.R_closure_inputs.append((label, text_box))
+            elif type == "formula":
+                self.R_formula_inputs.append((label, text_box))
 
+             
         # Set the content widget with the new layout to the scroll area
-        self.RClosure_scrollArea.setWidget(content_widget)
+        scrollArea.setWidget(content_widget)
 
         
 
