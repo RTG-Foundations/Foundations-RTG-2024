@@ -109,12 +109,21 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
         self.runFormula_pushButton.clicked.connect(self.run_formula_methods) 
 
+        # Let's see if Andrew's code goes!
+        self.query_comboBox.setCurrentIndex(-1)
+        self.query_comboBox.currentIndexChanged.connect(self.queryTypeChanged)
+
+    
+
 
         # Create the scroll widget for the output log
         self.scroll_widget = QWidget()
         self.scroll_layout = QVBoxLayout(self.scroll_widget)
         self.log_scrollArea.setWidgetResizable(True)
         self.log_scrollArea.setWidget(self.scroll_widget)
+
+    def queryTypeChanged(self, index):
+        self.query_stackedWidget.setCurrentIndex(index)
 
     
     def appendFormula(self, symbol):
