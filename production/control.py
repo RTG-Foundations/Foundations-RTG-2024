@@ -9,12 +9,13 @@ import json
 import datetime as dt
 
 from PyQt5.QtWidgets import ( QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-                             QLabel, QLineEdit, QScrollArea, QCheckBox)
+                             QLabel, QLineEdit, QScrollArea, QCheckBox, QRadioButton, QSpinBox)
 from PyQt5.QtCore import QThread, pyqtSignal
 
 # Programs
 import closures
 import modalFormula
+import pmorphism
 
 from settings_ui import Ui_Settings
 
@@ -109,10 +110,21 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
         self.runFormula_pushButton.clicked.connect(self.run_formula_methods) 
 
+#***********************************************************************************
+        # p_morphism_check 
+        
+        self.spinBox_1_pMorph.valueChanged.connect(lambda value: self.nChanged(value, "pMorph_R"))
+        self.spinBox_2_pMorph.valueChanged.connect(lambda value: self.nChanged(value, "pMorph_S"))
+        self.spinBox_1_pMorph.setMinimum(1)
+        self.spinBox_2_pMorph.setMinimum(1)
+        self.pushButton_pMorph.clicked.connect(self.run_pMorph_methods)
+
+       
+
         # Let's see if Andrew's code goes!
         self.query_comboBox.setCurrentIndex(-1)
         self.query_comboBox.currentIndexChanged.connect(self.queryTypeChanged)
-
+#************************************************************************************ 
     
 
 
@@ -148,7 +160,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             y_values = text_box.text().split()
             for y in y_values:
                 R.append([i, int(y)])
-        
+      
 
         # Create JSON
         selected_methods = []
@@ -164,6 +176,8 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             selected_methods.append({"name": "find_connected_components", "params": ["n", "R"]})
         if self.subframe_checkBox.isChecked():
             selected_methods.append({"name": "find_subframe", "params": ["n", "l", "R"]})
+
+      
         
         mysetup = {
             "parameters": {
@@ -275,6 +289,102 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                     self.writeToLog(f"{method_name}: {result}")
                 f.write("****************************************************************\n\n")
             self.writeToLog(f"Wrote output to {file}")
+
+
+    #********************************************************************
+    def run_pMorph_methods(self):
+        #Let me get some of them variables!
+        n = self.spinBox_1_pMorph.value()
+        k = self.spinBox_2_pMorph.value()
+
+        R = []
+        for i, (label, text_box) in enumerate(self.R_pMorph_inputs):
+            y_values = text_box.text().split()
+            for y in y_values:
+                R.append([i, int(y)])
+        
+        S = []
+        for i, (label, text_box) in enumerate(self.S_pMorph_inputs):
+            y_values = text_box.text().split()
+            for y in y_values:
+                S.append([i, int(y)])
+    
+        
+        #Let me create this json, I guess!
+        selected_methods = []
+        if self.radioButton_1_pMorph.isChecked():
+            selected_methods.append({"name": "check_p_morphism", "params": ["F", "G"]})
+        if self.radioButton_2_pMorph.isChecked():
+            selected_methods.append({"name": "compare_logics", "params": ["F", "G"]})
+
+        points_F = list(range(n))
+        points_G = list(range(k))
+    
+        mysetup = {
+        "frames": [
+            {
+                "name": "F",
+                "points": points_F,
+                "relation": R
+            },
+            {
+                "name": "G",
+                "points": points_G,
+                "relation": S
+            }
+        ],
+        "methods": selected_methods
+        }
+        
+        setup_file_path = "setup_pmorphism.json"
+        with open(setup_file_path, 'w') as f:
+            json.dump(mysetup, f, indent=4)
+
+        
+# Read setup.json
+
+        with open('setup_pmorphism.json', 'r') as f:
+            setup = json.load(f)
+    # Create frames
+        frames = {}
+        for frame_data in setup['frames']:
+            name = frame_data['name']
+            points = frame_data['points']
+            relation = frame_data['relation']
+            frames[name] = pmorphism.Frame(points=points, relation=relation)
+        # Convert relation lists to sets of tuples
+        for frame in frames.values():
+            frame.relation = set(map(tuple, frame.relation))
+        # Extract methods and call them
+
+        for method in setup['methods']:
+            method_name = method['name']
+            method_params = [frames[param] for param in method['params']]
+            result = getattr(pmorphism, method_name)(*method_params)
+            pmorphism.printIsPMorph(*method_params, result)
+
+
+    
+    def writePMorphOutput(self, setup, results):
+        file = get_data_file_path('pmorph_output.txt')
+        with open(file, 'a') as f:
+            # Write the parameters from the setup
+            f.write("Parameters:\n")
+            for param, value in setup["parameters"].items():
+                f.write(f"{param}: {value}\n")
+            
+            f.write("\nResults:\n")
+            
+            # Write the results from the methods
+            with open(file, 'a') as f:
+                for method_name, result in results:
+                    f.write(f"{method_name}: {result}\n")
+                    self.writeToLog(f"{method_name}: {result}")
+                f.write("****************************************************************\n\n")
+            self.writeToLog(f"Wrote output to {file}")
+        
+
+        #******************************************************************* 
             
 
     
@@ -337,6 +447,18 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         elif type == "formula":
             scrollArea = self.RFormula_scrollArea
             self.R_formula_inputs = []
+
+        #********************************************************************
+        elif type == "pMorph_R":
+            scrollArea = self.scrollArea_1_pMorph
+            self.R_pMorph_inputs = []
+
+        elif type == "pMorph_S":
+            scrollArea = self.scrollArea_2_pMorph
+            self.S_pMorph_inputs = []
+
+
+        #********************************************************************
         else:
             raise ValueError(f"nChanged called on invalid type {type}")
         
@@ -372,6 +494,13 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                 self.R_closure_inputs.append((label, text_box))
             elif type == "formula":
                 self.R_formula_inputs.append((label, text_box))
+            #********************************************************
+            elif type == "pMorph_R":
+                self.R_pMorph_inputs.append((label, text_box))
+
+            elif type == "pMorph_S":
+                self.S_pMorph_inputs.append((label, text_box))
+            #********************************************************
 
              
         # Set the content widget with the new layout to the scroll area

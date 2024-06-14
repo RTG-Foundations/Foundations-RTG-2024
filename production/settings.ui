@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="query_stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QGridLayout" name="gridLayout_17">
@@ -51,7 +51,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>740</width>
+                   <width>576</width>
                    <height>139</height>
                   </rect>
                  </property>
@@ -124,7 +124,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>740</width>
+                   <width>576</width>
                    <height>64</height>
                   </rect>
                  </property>
@@ -415,34 +415,6 @@ where the valuation of pi in M is Vi.</string>
            <string>p-MORPHISM EVALUATION</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>F = (Xn, R); G = (Yk, S).</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QRadioButton" name="findX_radioButton_2">
-             <property name="text">
-              <string>Are they p-morphic?</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>Run</string>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0">
-            <widget class="QRadioButton" name="findX_radioButton_3">
-             <property name="text">
-              <string>Log(F) = Log(G)?</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <widget class="QGroupBox" name="groupBox_16">
              <property name="title">
@@ -450,7 +422,19 @@ where the valuation of pi in M is Vi.</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_15">
               <item row="0" column="0">
-               <widget class="QSpinBox" name="spinBox_3"/>
+               <widget class="QSpinBox" name="spinBox_1_pMorph"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QGroupBox" name="groupBox_17">
+             <property name="title">
+              <string>k</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_16">
+              <item row="0" column="0">
+               <widget class="QSpinBox" name="spinBox_2_pMorph"/>
               </item>
              </layout>
             </widget>
@@ -462,7 +446,7 @@ where the valuation of pi in M is Vi.</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_10">
               <item row="0" column="0">
-               <widget class="QScrollArea" name="scrollArea_55">
+               <widget class="QScrollArea" name="scrollArea_1_pMorph">
                 <property name="widgetResizable">
                  <bool>true</bool>
                 </property>
@@ -481,6 +465,34 @@ where the valuation of pi in M is Vi.</string>
              </layout>
             </widget>
            </item>
+           <item row="5" column="0">
+            <widget class="QRadioButton" name="radioButton_1_pMorph">
+             <property name="text">
+              <string>Are they p-morphic?</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QRadioButton" name="radioButton_2_pMorph">
+             <property name="text">
+              <string>Log(F) = Log(G)?</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QPushButton" name="pushButton_pMorph">
+             <property name="text">
+              <string>Run</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>F = (Xn, R); G = (Yk, S).</string>
+             </property>
+            </widget>
+           </item>
            <item row="4" column="0">
             <widget class="QGroupBox" name="groupBox_6">
              <property name="title">
@@ -488,7 +500,7 @@ where the valuation of pi in M is Vi.</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_11">
               <item row="0" column="0">
-               <widget class="QScrollArea" name="scrollArea_2">
+               <widget class="QScrollArea" name="scrollArea_2_pMorph">
                 <property name="widgetResizable">
                  <bool>true</bool>
                 </property>
@@ -503,18 +515,6 @@ where the valuation of pi in M is Vi.</string>
                  </property>
                 </widget>
                </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QGroupBox" name="groupBox_17">
-             <property name="title">
-              <string>k</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_16">
-              <item row="0" column="0">
-               <widget class="QSpinBox" name="spinBox_4"/>
               </item>
              </layout>
             </widget>
@@ -554,7 +554,7 @@ where the valuation of pi in M is Vi.</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>736</width>
+                   <width>572</width>
                    <height>52</height>
                   </rect>
                  </property>
@@ -592,7 +592,7 @@ where the valuation of pi in M is Vi.</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>740</width>
+                   <width>576</width>
                    <height>52</height>
                   </rect>
                  </property>
