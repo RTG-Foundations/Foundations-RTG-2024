@@ -2,7 +2,7 @@
 import time
 import random
 from collections import deque
-
+import json
 '''
     Defines a Frame
 
@@ -303,7 +303,31 @@ def generate_random_frame(c):
 
 
 def main():
-
+    
+    # Read setup.json
+    with open('setup_pmorphism.json', 'r') as f:
+        setup = json.load(f)
+    
+    # Create frames
+    frames = {}
+    for frame_data in setup['frames']:
+        name = frame_data['name']
+        points = frame_data['points']
+        relation = frame_data['relation']
+        frames[name] = Frame(points=points, relation=relation)
+    
+    # Convert relation lists to sets of tuples
+    for frame in frames.values():
+        frame.relation = set(map(tuple, frame.relation))
+    
+    # Extract methods and call them
+    for method in setup['methods']:
+        method_name = method['name']
+        method_params = [frames[param] for param in method['params']]
+        result = globals()[method_name](*method_params)
+        printIsPMorph(*method_params, result)
+        
+    
     '''
         Known Examples
     '''
@@ -376,12 +400,11 @@ def main():
 
     print(f"|F| = {len(F.points)} |G| = {len(G.points)} F->->G? {f != None}\n")
     print(f"\tTime (ns): {ellapsed}\n")
-    
+   
 
 
 
 
-'''
+
 if __name__ == "__main__":
     main()
-'''

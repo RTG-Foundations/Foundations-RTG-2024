@@ -21,7 +21,7 @@
 
 
 import pmorphism
-from itertools import chain, combinations
+import json
 
 
 """
@@ -395,7 +395,58 @@ def print_mEquiv(F,G,m, result):
 
 
 def main():
+    """
+    compute_closure_result = None
+    X = {0, 1, 2, 3}
+    R = {(0, 1), (1, 3), (3, 0)}
+    V = [{0,1,2,3}, {1,2,3}]
 
+    # [V]
+    closure_V = compute_closure(V, R, X)
+    print_compute_closure(V,R,X, closure_V)
+    # F/∼ [V]
+    eq_pts_sets, eq_R = quotient_frame(X, R, closure_V)
+    print_quotient_frame(eq_pts_sets, eq_R)
+
+
+    # Read setup.json
+    with open('setup_quotient.json', 'r') as f:
+        setup = json.load(f)
+
+    parameters = setup["parameters"]
+    methods = setup["methods"]
+    
+
+    
+    V = parameters["V"]
+    R = parameters["R"]
+    X = parameters["X"]
+    
+
+    # Convert R from list of lists to set of tuples
+    R = {tuple(r) for r in R}
+    V = [set(v) for v in V]
+
+    for method in methods:
+        name = method["name"]
+        
+        if name == "compute_closure":
+            compute_closure_result = compute_closure(V, R, X)
+            print_compute_closure(V, R, X, compute_closure_result)
+        
+        elif name == "quotient_frame":
+            if compute_closure_result is None:
+                compute_closure_result = compute_closure(V, R, X)
+            
+                
+            eq_pts_sets, eq_R = quotient_frame(X, R, compute_closure_result)
+            print_quotient_frame(eq_pts_sets, eq_R)
+
+    """
+
+    '''
+        m - equivalence
+    '''
     F = pmorphism.Frame(points=[0,1,2,3,4], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(0,4),(4,0),(1,4),(4,1),(2,4),(4,2),(3,4),(4,3)})
     G = pmorphism.Frame(points=[0,1,2,3], relation={(0, 1),(1,0),(1,3),(3,1),(2,3),(3,2),(0,2),(2,0),(2,1),(1,2),(0,3),(3,0),(3,3)})
 
@@ -419,6 +470,9 @@ def main():
     write_mEquiv(F,G,m, result)  # false
 
 
+    '''
+        closure and quotient frame
+    '''
     X = {0, 1, 2, 3,4,5,6,7,8,9,10,11}
     R = {(0, 1), (1,2),(2,3),(3,4),(4,5),(5,0),(6,7),(7,8),(8,9),(9,10),(10,11),(11,6)}
     V = [{0,6}]
@@ -475,8 +529,7 @@ def main():
     G = pmorphism.Frame(points=[0,1,2], relation={(0, 1), (1,0), (1,2), (2,1), (2,2)})
     result = mEquiv(F,G, m)
     print_mEquiv(F,G,m, result)
-    
-
+  
     
    
 if __name__ == "__main__":

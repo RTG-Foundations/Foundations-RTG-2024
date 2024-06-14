@@ -450,7 +450,7 @@ def execute_methods(setup):
     Takes JSON file as an argument
 '''
 def main():
-
+    """
     if len(sys.argv) != 2:
         print("Usage: python script.py <setup_file_path>")
         sys.exit(1)
@@ -461,9 +461,9 @@ def main():
 
     for method_name, result in results:
            print(f"{method_name}: {result}\n")
+    """
 
-
-    '''
+    
     # Exercise 2.9 b
     expression = '♢(♢(p1 -->  ⊥)) --> p2'
     print(f"{expression}\n{find_subformulas(expression)}\n")  
@@ -542,7 +542,7 @@ def main():
     f"Xn= {', '.join(str(num) for num in range(n))}\n" 
     f"R={R}") 
     print(f"Is valid: {is_formula_valid_in_model(phi, n, R)}\n")  
-    '''
+    
   
 
 
