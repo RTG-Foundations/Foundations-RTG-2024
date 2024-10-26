@@ -154,21 +154,23 @@ def check_p_morphism(F, G):
     Helper method to display result of check_p_morphism
 '''
 def printIsPMorph(F,G, f):
+    result = []
+    result.append(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
+    result.append(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
     
-    print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
-    print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
-
-    isPMorp = (f != None)
-    if(not isPMorp):
-        print("G is NOT a p-morphic image of F")
-    
+    if f is None:
+        result.append("G is NOT a p-morphic image of F")
     else:
-        print("F ->-> G when: ")
-        print("f = ")
+        result.append("F ->-> G when:")
+        result.append("f =")
         for x1 in f:
             x2 = f[x1]
-            print(f"\t {{ {x1} --> {x2}")
-    print()
+            result.append(f"{{ {x1} --> {x2} }}")
+    
+    print("\n".join(result))
+    return "\n".join(result)
+    
+   
 
 
 '''
@@ -262,15 +264,20 @@ def log_subset(F, G):
     Helper method to display result of log_equal
 '''        
 def printLogEqual(F,G, result):
-    
-    print(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
-    print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
+    output = []
+    output.append(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
+    output.append(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
 
     if (result == True):
-        print("Log(F) = Log(G)")
+        output.append("Log(F) = Log(G)")
     else:
-        print("Log(F) != Log(G)")
-    print()
+        output.append("Log(F) != Log(G)")
+    
+    print("\n".join(output))
+    return "\n".join(output)
+
+
+   
 
 
 '''
@@ -303,30 +310,6 @@ def generate_random_frame(c):
 
 
 def main():
-    
-    # Read setup.json
-    with open('setup_pmorphism.json', 'r') as f:
-        setup = json.load(f)
-    
-    # Create frames
-    frames = {}
-    for frame_data in setup['frames']:
-        name = frame_data['name']
-        points = frame_data['points']
-        relation = frame_data['relation']
-        frames[name] = Frame(points=points, relation=relation)
-    
-    # Convert relation lists to sets of tuples
-    for frame in frames.values():
-        frame.relation = set(map(tuple, frame.relation))
-    
-    # Extract methods and call them
-    for method in setup['methods']:
-        method_name = method['name']
-        method_params = [frames[param] for param in method['params']]
-        result = globals()[method_name](*method_params)
-        printIsPMorph(*method_params, result)
-        
     
     '''
         Known Examples

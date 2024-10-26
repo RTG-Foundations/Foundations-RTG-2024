@@ -417,52 +417,9 @@ def generate_all_valuations(variables, n):
     return valuations
 
 
-'''
-    Read and execute JSON File
-'''
-# Load the setup file
-def load_setup_file(file_path):
-    with open(file_path, 'r') as file:
-        return json.load(file)
-
-# Execute methods based on setup file
-def execute_methods(setup):
-    parameters = setup["parameters"]
-    methods = setup["methods"]
-    results = []
-    
-    for method in methods:
-        method_name = method["name"]
-        params = [parameters[param] for param in method["params"]]
-        try:
-            # Dynamically call the method from control module with the parameters
-            result = getattr(sys.modules[__name__], method_name)(*params)
-            results.append((method_name, result))  # Append tuple of (method_name, result)
-        except AttributeError:
-            results.append((method_name, f"Method {method_name} not found in control module."))
-        except Exception as e:
-            results.append((method_name, f"Error calling {method_name}: {e}"))
-    
-    return results
 
 
-'''
-    Takes JSON file as an argument
-'''
 def main():
-    """
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <setup_file_path>")
-        sys.exit(1)
-    
-    setup_file_path = sys.argv[1]
-    setup = load_setup_file(setup_file_path)
-    results = execute_methods(setup)
-
-    for method_name, result in results:
-           print(f"{method_name}: {result}\n")
-    """
-
     
     # Exercise 2.9 b
     expression = '♢(♢(p1 -->  ⊥)) --> p2'

@@ -118,19 +118,23 @@ def compute_closure(V, R, X):
 
 '''
 def print_compute_closure(V,R,X, closure_V):
-    print(f"X: {X}")
-    print(f"R: {R}")
-    print(f"V: {V}")
+    output = []
+    output.append(f"X: {X}")
+    output.append(f"R: {R}")
+    output.append(f"V: {V}")
     
     if closure_V is None:
-        print("Closure of V is empty")
+        output.append("Closure of V is empty")
     else:
-        print(f"Length of [V]: {len(closure_V)}")
+        output.append(f"Length of [V]: {len(closure_V)}")
         
-        print("[V] = {")
+        output.append("[V] = {")
         for x in closure_V:
-              print(f"\t{set(x)}")
-        print("}\n")
+            output.append(f"{set(x)}")
+        output.append("}\n")
+
+    print("\n".join(output))
+    return "\n".join(output)
 
 
 """
@@ -228,17 +232,27 @@ def quotient_frame(X, R, V_closure):
     return classes, induced_R
 
 
+# Oct 21, compute closure_v then find quotient frame
+def call_compute_quotient_frame(X, R, V):
+    closure_V = compute_closure(V, R, X)
+    # F/∼ [V]
+    eq_pts_sets, eq_R = quotient_frame(X, R, closure_V)
+    return print_quotient_frame(eq_pts_sets, eq_R)
+
 '''
     Helper method to print the result of quotient_frame
 '''
 def print_quotient_frame(pts_sets, R):
-    
-    print("F/∼ [V]: ")
-    print("X: ")
+    output = []
+    output.append("F/∼ [V]: ")
+    output.append("X: ")
     for my_point, my_set in pts_sets.items():
-        print(f"\t{my_point} : {set(my_set)}")
+        output.append(f"{my_point} : {set(my_set)}")
    
-    print(f"R: {R}\n")
+    output.append(f"R: {R}\n")
+
+    print("\n".join(output))
+    return "\n".join(output)
 
 
 """
@@ -392,58 +406,21 @@ def print_mEquiv(F,G,m, result):
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
     print(f"{m}-Equivalent? {result}\n")
 
+def call_check_p_morphism(F, G):
+    f = pmorphism.check_p_morphism(F, G)
+    return pmorphism.printIsPMorph(F,G, f)
+
+def call_log_equal(F, G):
+    return pmorphism.log_equal(F, G)
+    
+def call_compute_closure(V, R, X):
+    closure_V = compute_closure(V, R, X)
+    return print_compute_closure(V,R,X, closure_V)
+
 
 
 def main():
-    """
-    compute_closure_result = None
-    X = {0, 1, 2, 3}
-    R = {(0, 1), (1, 3), (3, 0)}
-    V = [{0,1,2,3}, {1,2,3}]
-
-    # [V]
-    closure_V = compute_closure(V, R, X)
-    print_compute_closure(V,R,X, closure_V)
-    # F/∼ [V]
-    eq_pts_sets, eq_R = quotient_frame(X, R, closure_V)
-    print_quotient_frame(eq_pts_sets, eq_R)
-
-
-    # Read setup.json
-    with open('setup_quotient.json', 'r') as f:
-        setup = json.load(f)
-
-    parameters = setup["parameters"]
-    methods = setup["methods"]
-    
-
-    
-    V = parameters["V"]
-    R = parameters["R"]
-    X = parameters["X"]
-    
-
-    # Convert R from list of lists to set of tuples
-    R = {tuple(r) for r in R}
-    V = [set(v) for v in V]
-
-    for method in methods:
-        name = method["name"]
-        
-        if name == "compute_closure":
-            compute_closure_result = compute_closure(V, R, X)
-            print_compute_closure(V, R, X, compute_closure_result)
-        
-        elif name == "quotient_frame":
-            if compute_closure_result is None:
-                compute_closure_result = compute_closure(V, R, X)
-            
-                
-            eq_pts_sets, eq_R = quotient_frame(X, R, compute_closure_result)
-            print_quotient_frame(eq_pts_sets, eq_R)
-
-    """
-
+   
     '''
         m - equivalence
     '''

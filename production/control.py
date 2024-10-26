@@ -5,16 +5,16 @@
 import os
 import re
 import sys
-import json
 import datetime as dt
 
 from PyQt5.QtWidgets import ( QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-                             QLabel, QLineEdit, QScrollArea, QCheckBox, QRadioButton, QSpinBox)
+                             QLabel, QLineEdit)
 from PyQt5.QtCore import QThread, pyqtSignal
 
 # Programs
 import closures
 import modalFormula
+import mequivalence
 import pmorphism
 
 from settings_ui import Ui_Settings
@@ -28,11 +28,6 @@ from settings_ui import Ui_Settings
 def get_data_file_path(filename):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, filename)
-
-# Load the setup file
-def load_setup_file(file_path):
-    with open(file_path, 'r') as file:
-        return json.load(file)
 
 # Execute methods based on setup file
 def execute_methods(setup, program):
@@ -62,20 +57,21 @@ def execute_methods(setup, program):
 
 '''
 class RunMethods(QThread):
-    success = pyqtSignal(object, object)
+    success = pyqtSignal(object, object, object)
     fail = pyqtSignal(str)
     
-    def __init__(self, program, setup):
+    def __init__(self, program, setup, my_id):
         super().__init__()
         self.program = program
         self.setup = setup
+        self.my_id = my_id
 
     def run(self):
-        try:
-            results = execute_methods(self.setup, self.program)
-            self.success.emit(self.setup,results)
-        except Exception as e:
-            self.fail.emit(str(e))
+        #try:
+        results = execute_methods(self.setup, self.program)
+        self.success.emit(self.setup,results, self.my_id)
+        #except Exception as e:
+        #    self.fail.emit(str(e))
 
 
 
@@ -87,12 +83,22 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         QMainWindow.__init__(self)
         Ui_Settings.__init__(self)
         self.setupUi(self)
-
+  
+        self.R_closure_inputs = []
+        self.R_quotient_inputs = []
+        self.R_formula_inputs = []
+        self.R_pMorph_inputs = []
+        self.S_pMorph_inputs = []
+        
 
         '''
             Connect Buttons
         '''
-        
+        # Let's see if Andrew's code goes!
+        self.query_comboBox.currentIndexChanged.connect(self.queryTypeChanged)
+        self.queryTypeChanged(0)
+
+
         # closure
         self.nClosure_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "closure"))
         self.runClosures_pushButton.clicked.connect(self.run_closure_methods) 
@@ -110,43 +116,143 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
         self.runFormula_pushButton.clicked.connect(self.run_formula_methods) 
 
-#***********************************************************************************
-        # p_morphism_check 
+
+        # Quotient Frame
+        self.V_counter = 0
+        self.V_layout = QVBoxLayout()
+        self.nQuotient_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "quotient"))
+        self.addV_pushButton.clicked.connect(self.add_V)
+        self.delV_pushButton.clicked.connect(self.remove_V)
+        self.runQuotient_pushButton.clicked.connect(self.run_quotient_methods) 
+
+        # m-equivalence
+        self.m_spinBox.setMinimum(1)
+        self.mEquivN_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "pMorph_R"))
+        self.k_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "pMorph_S"))
+        self.mEquivN_spinBox.setMinimum(1)
+        self.k_spinBox.setMinimum(1)
+        self.runMEquiv_pushButton.clicked.connect(self.run_pMorph_methods)
+
         
-        self.spinBox_1_pMorph.valueChanged.connect(lambda value: self.nChanged(value, "pMorph_R"))
-        self.spinBox_2_pMorph.valueChanged.connect(lambda value: self.nChanged(value, "pMorph_S"))
-        self.spinBox_1_pMorph.setMinimum(1)
-        self.spinBox_2_pMorph.setMinimum(1)
-        self.pushButton_pMorph.clicked.connect(self.run_pMorph_methods)
-
-       
-
-        # Let's see if Andrew's code goes!
-        self.query_comboBox.setCurrentIndex(-1)
-        self.query_comboBox.currentIndexChanged.connect(self.queryTypeChanged)
-#************************************************************************************ 
-    
-
-
-        # Create the scroll widget for the output log
-        self.scroll_widget = QWidget()
-        self.scroll_layout = QVBoxLayout(self.scroll_widget)
-        self.log_scrollArea.setWidgetResizable(True)
-        self.log_scrollArea.setWidget(self.scroll_widget)
-
+        
     def queryTypeChanged(self, index):
         self.query_stackedWidget.setCurrentIndex(index)
 
     
     def appendFormula(self, symbol):
+        # Get the current text and cursor position in the line edit
         current_text = self.formula_lineEdit.text()
-        if (symbol == "arrow"):
-            self.formula_lineEdit.setText(current_text + "-->")
-        elif (symbol == "diamond"):
-            self.formula_lineEdit.setText(current_text + "♢")
-        elif (symbol == "false"):
-            self.formula_lineEdit.setText(current_text + "⊥")
+        cursor_position = self.formula_lineEdit.cursorPosition()
 
+        # Determine the symbol to append
+        if symbol == "arrow":
+            new_text = current_text[:cursor_position] + "-->" + current_text[cursor_position:]
+            new_cursor_position = cursor_position + 3  # Adjust for length of "-->"
+        elif symbol == "diamond":
+            new_text = current_text[:cursor_position] + "♢" + current_text[cursor_position:]
+            new_cursor_position = cursor_position + 1  # Adjust for length of "♢"
+        elif symbol == "false":
+            new_text = current_text[:cursor_position] + "⊥" + current_text[cursor_position:]
+            new_cursor_position = cursor_position + 1  # Adjust for length of "⊥"
+        else:
+            return  # Return early if an invalid symbol is passed
+
+        # Set the new text and restore the cursor position
+        self.formula_lineEdit.setText(new_text)
+        self.formula_lineEdit.setCursorPosition(new_cursor_position)
+        self.formula_lineEdit.setFocus()
+
+
+    def run_pMorph_methods(self):
+        #Let me get some of them variables!
+        n = self.mEquivN_spinBox.value()
+        k = self.k_spinBox.value()
+        m = self.m_spinBox.value()
+
+        R = set()
+        for i, (label, text_box) in enumerate(self.R_pMorph_inputs):
+            y_values = text_box.text().split()
+            for y in y_values:
+                R.add((i, int(y)))
+        
+        S = set()
+        for i, (label, text_box) in enumerate(self.S_pMorph_inputs):
+            y_values = text_box.text().split()
+            for y in y_values:
+                S.add((i, int(y)))
+    
+        
+        #Let me create this json, I guess!
+        selected_methods = []
+        if self.pmorphic_radioButton.isChecked():
+            selected_methods.append({"name": "call_check_p_morphism", "params": ["F", "G"]})
+        if self.log_radioButton.isChecked():
+            selected_methods.append({"name": "call_log_equal", "params": ["F", "G"]})
+        if self.mEquiv_radioButton.isChecked():
+            selected_methods.append({"name": "mEquiv", "params": ["F", "G", "m"]})
+
+        points_F = list(range(n))
+        points_G = list(range(k))
+    
+        F = pmorphism.Frame(points=points_F, relation=R)
+        G = pmorphism.Frame(points=points_G, relation=S)
+        mysetup = {
+        "parameters":
+            {
+                "F": F,
+                "G": G,
+                "m": m
+            },
+            "methods": selected_methods
+        }
+        
+        self.pMorph = RunMethods(program=mequivalence, setup=mysetup, my_id="mEquiv")
+        self.pMorph.success.connect(self.writeOutput)  
+        self.pMorph.fail.connect(self.taskFailed) 
+        self.pMorph.start()
+
+    def run_quotient_methods(self):
+        # Get variables
+        xn = set(range(self.nQuotient_spinBox.value()))
+
+        R = set()
+        for i, (label, text_box) in enumerate(self.R_quotient_inputs):
+            y_values = text_box.text().split()
+            for y in y_values:
+                R.add((i, int(y)))
+
+        V = set()
+        for line_edit in self.VQuotient_scrollArea.findChildren(QLineEdit):
+            text = line_edit.text()
+            if text:
+                worlds = set(map(int, text.split()))
+                V.add(frozenset(worlds))  # Use frozenset if the inner sets should be immutable
+
+        selected_methods = []
+
+        if self.vClosure_checkBox.isChecked():
+            selected_methods.append({"name": "call_compute_closure", "params": ["V", "R", "X"]})
+        if self.quotient_checkBox.isChecked():
+            selected_methods.append({"name": "call_compute_quotient_frame", "params": ["X", "R", "V"]})
+
+        mysetup = {
+            "parameters": {
+                "V": V,
+                "R": R,
+                "X": xn
+            },
+            "methods": selected_methods
+        }
+
+        self.quotient = RunMethods(program=mequivalence, setup=mysetup, my_id="quotient")
+        self.quotient.success.connect(self.writeOutput)  
+        self.quotient.fail.connect(self.taskFailed) 
+        self.quotient.start()
+
+       
+     
+        
+       
 
    
     def run_closure_methods(self):
@@ -155,12 +261,12 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         n = self.nClosure_spinBox.value()
         l = self.l_spinBox.value()
         
-        R = []
+        R = set()
         for i, (label, text_box) in enumerate(self.R_closure_inputs):
             y_values = text_box.text().split()
             for y in y_values:
-                R.append([i, int(y)])
-      
+                R.add((i, int(y)))
+        
 
         # Create JSON
         selected_methods = []
@@ -176,8 +282,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             selected_methods.append({"name": "find_connected_components", "params": ["n", "R"]})
         if self.subframe_checkBox.isChecked():
             selected_methods.append({"name": "find_subframe", "params": ["n", "l", "R"]})
-
-      
         
         mysetup = {
             "parameters": {
@@ -188,35 +292,41 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             "methods": selected_methods
         }
         
-        setup_file_path = "closure_setup.json"
-        with open(setup_file_path, 'w') as f:
-            json.dump(mysetup, f, indent=4)
-        
         # Thread to execute methods
-        self.closure = RunMethods(program=closures, setup= mysetup)
-        self.closure.success.connect(self.writeclosureOutput)  
+        self.closure = RunMethods(program=closures, setup= mysetup, my_id="closure")
+        self.closure.success.connect(self.writeOutput)  
         self.closure.fail.connect(self.taskFailed) 
         self.closure.start()
 
-    
-    def writeclosureOutput(self, setup, results):
 
-        file = get_data_file_path('closure_output.txt')
+    def writeOutput(self, setup, results, my_id):
+        # Define the output file name based on the type
+
+        output_dir = "output"
+        file = get_data_file_path(f"{output_dir}/{my_id}_output.txt")
+        os.makedirs(output_dir, exist_ok=True)
+
+
         with open(file, 'a') as f:
             # Write the parameters from the setup
-            f.write("Parameters:\n")
+            f.write("\nParameters:\n")
             for param, value in setup["parameters"].items():
                 f.write(f"{param}: {value}\n")
             
-            # Write results
+            # Write the results from the methods
             f.write("\nResults:\n")
             for method_name, result in results:
-                f.write(f"{method_name}: {result}\n")
-                self.writeToLog(f"{method_name}: {result}")
+                f.write(f"{method_name}:\n{result}\n")
+                self.writeToLog(f"{method_name}:\n{result}")
+
+                
+
             f.write("****************************************************************\n\n")
-        self.writeToLog(f"Wrote output to {file}")
+        
+        self.writeToLog(f"Wrote {my_id} output to {file}")
 
 
+   
     def taskFailed(self, e):
         self.writeToLog(f"{e}")
 
@@ -228,11 +338,13 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         phi = self.formula_lineEdit.text()
         n = self.nFormula_spinBox.value()
         # R 
-        R = []
+        R = set()
         for i, (label, text_box) in enumerate(self.R_formula_inputs):
             y_values = text_box.text().split()
             for y in y_values:
-                R.append([i, int(y)])
+                R.add((i, int(y)))
+                R = set()
+        
         # V 
         V = {}
         for prop, text_box in self.V_formula_inputs.items():
@@ -242,7 +354,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                 V[prop].add(world)
         
         # Create JSON file
-        V_serializable = {k: list(v) for k, v in V.items()}
         selected_methods = []
         if self.subformulas_radioButton.isChecked():
             selected_methods.append({"name": "find_subformulas", "params": ["phi"]})
@@ -256,138 +367,22 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                 "phi": phi,
                 "n": n,
                 "R": R,
-                "V": V_serializable
+                "V": V
             },
             "methods": selected_methods
         }
         
-        setup_file_path = "formula_setup.json"
-        with open(setup_file_path, 'w') as f:
-            json.dump(mysetup, f, indent=4)
-
         # Thread to execute methods
-        self.formula = RunMethods(program=modalFormula, setup= mysetup)
-        self.formula.success.connect(self.writeFormulaOutput)  
+        self.formula = RunMethods(program=modalFormula, setup= mysetup, my_id="formula")
+        self.formula.success.connect(self.writeOutput)  
         self.formula.fail.connect(self.taskFailed) 
         self.formula.start()
 
-
-    def writeFormulaOutput(self, setup, results):
-        file = get_data_file_path('formula_output.txt')
-        with open(file, 'a') as f:
-            # Write the parameters from the setup
-            f.write("Parameters:\n")
-            for param, value in setup["parameters"].items():
-                f.write(f"{param}: {value}\n")
-            
-            f.write("\nResults:\n")
-            
-            # Write the results from the methods
-            with open(file, 'a') as f:
-                for method_name, result in results:
-                    f.write(f"{method_name}: {result}\n")
-                    self.writeToLog(f"{method_name}: {result}")
-                f.write("****************************************************************\n\n")
-            self.writeToLog(f"Wrote output to {file}")
-
-
-    #********************************************************************
-    def run_pMorph_methods(self):
-        #Let me get some of them variables!
-        n = self.spinBox_1_pMorph.value()
-        k = self.spinBox_2_pMorph.value()
-
-        R = []
-        for i, (label, text_box) in enumerate(self.R_pMorph_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                R.append([i, int(y)])
-        
-        S = []
-        for i, (label, text_box) in enumerate(self.S_pMorph_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                S.append([i, int(y)])
-    
-        
-        #Let me create this json, I guess!
-        selected_methods = []
-        if self.radioButton_1_pMorph.isChecked():
-            selected_methods.append({"name": "check_p_morphism", "params": ["F", "G"]})
-        if self.radioButton_2_pMorph.isChecked():
-            selected_methods.append({"name": "compare_logics", "params": ["F", "G"]})
-
-        points_F = list(range(n))
-        points_G = list(range(k))
-    
-        mysetup = {
-        "frames": [
-            {
-                "name": "F",
-                "points": points_F,
-                "relation": R
-            },
-            {
-                "name": "G",
-                "points": points_G,
-                "relation": S
-            }
-        ],
-        "methods": selected_methods
-        }
-        
-        setup_file_path = "setup_pmorphism.json"
-        with open(setup_file_path, 'w') as f:
-            json.dump(mysetup, f, indent=4)
-
-        
-# Read setup.json
-
-        with open('setup_pmorphism.json', 'r') as f:
-            setup = json.load(f)
-    # Create frames
-        frames = {}
-        for frame_data in setup['frames']:
-            name = frame_data['name']
-            points = frame_data['points']
-            relation = frame_data['relation']
-            frames[name] = pmorphism.Frame(points=points, relation=relation)
-        # Convert relation lists to sets of tuples
-        for frame in frames.values():
-            frame.relation = set(map(tuple, frame.relation))
-        # Extract methods and call them
-
-        for method in setup['methods']:
-            method_name = method['name']
-            method_params = [frames[param] for param in method['params']]
-            result = getattr(pmorphism, method_name)(*method_params)
-            pmorphism.printIsPMorph(*method_params, result)
-
-
-    
-    def writePMorphOutput(self, setup, results):
-        file = get_data_file_path('pmorph_output.txt')
-        with open(file, 'a') as f:
-            # Write the parameters from the setup
-            f.write("Parameters:\n")
-            for param, value in setup["parameters"].items():
-                f.write(f"{param}: {value}\n")
-            
-            f.write("\nResults:\n")
-            
-            # Write the results from the methods
-            with open(file, 'a') as f:
-                for method_name, result in results:
-                    f.write(f"{method_name}: {result}\n")
-                    self.writeToLog(f"{method_name}: {result}")
-                f.write("****************************************************************\n\n")
-            self.writeToLog(f"Wrote output to {file}")
-        
-
-        #******************************************************************* 
-            
-
-    
+    '''
+        Constructs V by creating a label for each unique propositions in formula_lineEdit,  
+        and a corresponding lineEdit to be filled with with worlds where the proposition 
+        is true
+    '''
     def check_formula_for_params(self):
         
         formula_text = self.formula_lineEdit.text()
@@ -428,55 +423,113 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Set the content widget with the new layout to the scroll area
         scrollArea.setWidget(content_widget)
 
+    def add_V(self):
+        layout = self.VQuotient_scrollArea.widget().layout()
+        
+        # Ensure the VQuotient_layout exists
+        if layout is None:
+            layout = QVBoxLayout()
+            content_widget = QWidget()
+            content_widget.setLayout(layout)
+            self.VQuotient_scrollArea.setWidget(content_widget)
+        
+        # Create a horizontal layout for each label-text box pair
+        row_layout = QHBoxLayout()
+        
+        label = QLabel(f"V{self.V_counter}", self)
+        text_box = QLineEdit()
+        
+        row_layout.addWidget(label)
+        row_layout.addWidget(text_box)
+        
+        # Add the horizontal layout to the vertical layout of the scroll area
+        layout.addLayout(row_layout)
+        
+        # Increment the counter
+        self.V_counter += 1
+        
 
-    
+
+    def remove_V(self):
+        layout = self.VQuotient_scrollArea.widget().layout()
+        
+        # Ensure there is a layout to work with
+        if layout is None:
+            return  # No items to remove
+        
+        # Get the count of items in the layout
+        count = layout.count()
+        
+        # Check if there are any items to remove
+        if count > 0:
+            # Remove the last added horizontal layout (label-text box pair)
+            item = layout.itemAt(count - 1)
+            if item is not None:
+                # Remove all widgets from the layout item
+                for i in reversed(range(item.count())):
+                    widget = item.itemAt(i).widget()
+                    if widget is not None:
+                        widget.deleteLater()
+                    item.removeItem(item.itemAt(i))
+                
+                # Remove the layout item itself from the main layout
+                layout.removeItem(item)
+                
+                # Reset the counter if any items are removed
+                if self.V_counter > 0:
+                    self.V_counter -= 1
+
+
+    '''
+        Constructs R from N, where each label is a node 0, ... n-1
+        and the line edit can be filled with  a list of relations
+     
+    '''
+
     def nChanged(self, n, type):
-
-        # Clear any existing widgets from the layout
+        # Generate the formatted numbers for display
+        numbers = [str(num) for num in range(n)]
+        formatted_numbers = ', '.join(numbers)
+        
+        # Initialize the scroll area and input list based on the type
         if type == "closure":
-            # Xn label
-            numbers = [str(num) for num in range(n)]
-            formatted_numbers = '\n\t'.join(', '.join(numbers[i:i+10]) for i in range(0, len(numbers), 10))
-            if type == "closure":
-                self.Xn_label.setText(f"Xn= {{\t{formatted_numbers}\t}}")
-
+            self.closureXn_textBrowser.setText(f"Xn= {{{formatted_numbers}}}")
             scrollArea = self.RClosure_scrollArea
-            self.R_closure_inputs = []
-
-
+            input_list = self.R_closure_inputs
+        elif type == "quotient":
+            self.xnQuotient_textBrowser.setText(f"Xn= {{{formatted_numbers}}}")
+            scrollArea = self.RQuotient_scrollArea
+            input_list = self.R_quotient_inputs
         elif type == "formula":
             scrollArea = self.RFormula_scrollArea
-            self.R_formula_inputs = []
-
-        #********************************************************************
+            input_list = self.R_formula_inputs
         elif type == "pMorph_R":
-            scrollArea = self.scrollArea_1_pMorph
-            self.R_pMorph_inputs = []
-
+            self.mEquivXn_textBrowser.setText(f"Xn= {{{formatted_numbers}}}")
+            scrollArea = self.mEquivR_scrollArea
+            input_list = self.R_pMorph_inputs
         elif type == "pMorph_S":
-            scrollArea = self.scrollArea_2_pMorph
-            self.S_pMorph_inputs = []
-
-
-        #********************************************************************
+            self.mEquivYk_textBrowser.setText(f"Yk= {{{formatted_numbers}}}")
+            scrollArea = self.s_scrollArea
+            input_list = self.S_pMorph_inputs
         else:
             raise ValueError(f"nChanged called on invalid type {type}")
         
-        layout = scrollArea.layout()
+        # Store current values in a dictionary before clearing
+        old_values = {label.text(): text_box.text() for label, text_box in input_list}
+        input_list.clear()  # Clear the list to store the new widgets
         
+        # Clear any existing widgets from the layout
+        layout = scrollArea.layout()
         if layout is not None:
             while layout.count():
                 item = layout.takeAt(0)
                 widget = item.widget()
                 if widget:
                     widget.deleteLater()
-
         
-
         # Create a new layout for the scroll area content
         content_widget = QWidget()
         self.R_layout = QVBoxLayout(content_widget)
-        
         
         # Populate the layout with label-text box pairs
         for i in range(n):
@@ -485,26 +538,22 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             label = QLabel(f'{i}')
             text_box = QLineEdit()
             
+            # Restore the previous value if it exists
+            old_value = old_values.get(label.text())
+            if old_value is not None:
+                text_box.setText(old_value)
+            
             row_layout.addWidget(label)
             row_layout.addWidget(text_box)
             
             self.R_layout.addLayout(row_layout)
             
-            if type == "closure":
-                self.R_closure_inputs.append((label, text_box))
-            elif type == "formula":
-                self.R_formula_inputs.append((label, text_box))
-            #********************************************************
-            elif type == "pMorph_R":
-                self.R_pMorph_inputs.append((label, text_box))
-
-            elif type == "pMorph_S":
-                self.S_pMorph_inputs.append((label, text_box))
-            #********************************************************
-
-             
+            # Store references to the new widgets
+            input_list.append((label, text_box))
+        
         # Set the content widget with the new layout to the scroll area
         scrollArea.setWidget(content_widget)
+
 
         
 
@@ -516,15 +565,14 @@ class MyMainWindow(QMainWindow, Ui_Settings):
     '''
     def writeToLog(self, message):
         current_datetime = dt.datetime.now()
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d-%H:%M:%S")
-        label = QLabel('{}: {}'.format(formatted_datetime,message))
-        self.scroll_layout.addWidget(label) 
-
-        # Scroll to the bottom of the scroll view
-        parent = self.scroll_layout.parentWidget()
-        area = QScrollArea(parent)
-        vbar = area.verticalScrollBar()
-        vbar.setValue(vbar.maximum())
+        formatted_datetime = current_datetime.strftime("%H:%M:%S")
+        log_message = f'{formatted_datetime}: {message}'
+        
+        # Append the message to the QTextBrowser
+        self.log_textBrowser.append(log_message)
+        
+        # Automatically scroll to the bottom
+        self.log_textBrowser.ensureCursorVisible()
         
         QApplication.processEvents()
 
