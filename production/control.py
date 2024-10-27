@@ -302,6 +302,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
     def writeOutput(self, setup, results, my_id):
         # Define the output file name based on the type
 
+        self.writeToLog(f"**** {my_id.upper() } ****")
         output_dir = "output"
         file = get_data_file_path(f"{output_dir}/{my_id}_output.txt")
         os.makedirs(output_dir, exist_ok=True)
@@ -323,7 +324,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
             f.write("****************************************************************\n\n")
         
-        self.writeToLog(f"Wrote {my_id} output to {file}")
+        self.writeToLog(f"Wrote {my_id} output to {file}\n")
 
 
    
@@ -564,12 +565,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             message - text to display
     '''
     def writeToLog(self, message):
-        current_datetime = dt.datetime.now()
-        formatted_datetime = current_datetime.strftime("%H:%M:%S")
-        log_message = f'{formatted_datetime}: {message}'
-        
+     
         # Append the message to the QTextBrowser
-        self.log_textBrowser.append(log_message)
+        self.log_textBrowser.append(message)
         
         # Automatically scroll to the bottom
         self.log_textBrowser.ensureCursorVisible()
