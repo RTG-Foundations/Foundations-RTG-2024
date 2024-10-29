@@ -22,9 +22,6 @@ During parsing, stores the formula s as an abstract syntax tree, which can be ev
 3)  Given a positive integer n and a relation R on X n, return whether s is valid in (X n , R)?
 
 '''
-
-import sys
-import json
 import re # for matching regular expressions
 from itertools import product
 
@@ -420,7 +417,7 @@ def generate_all_valuations(variables, n):
 
 
 def main():
-    
+    '''
     # Exercise 2.9 b
     expression = '♢(♢(p1 -->  ⊥)) --> p2'
     print(f"{expression}\n{find_subformulas(expression)}\n")  
@@ -428,6 +425,7 @@ def main():
     expression = '♢(p4 --> (♢(p1)))'
     print(f"{expression}\n{find_subformulas(expression)}\n")  
 
+    # bad example
     expression = '(♢())'
     print(f"{expression}\n{find_subformulas(expression)}\n")  
 
@@ -452,7 +450,7 @@ def main():
     print(f"{expression}\n{find_subformulas(expression)}\n") 
     expression = '(p0 --> ♢(♢(p2))) --> ⊥' 
     print(f"{expression}\n{find_subformulas(expression)}\n") 
-  
+    '''
 
         
     # Exercise 2.10

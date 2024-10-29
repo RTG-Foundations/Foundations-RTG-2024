@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>532</width>
-    <height>594</height>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,7 +60,7 @@
     <item row="4" column="0">
      <widget class="QStackedWidget" name="query_stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="closure_page">
        <layout class="QGridLayout" name="gridLayout_17">
@@ -215,7 +215,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-138</y>
+                <y>0</y>
                 <width>280</width>
                 <height>549</height>
                </rect>

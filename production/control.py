@@ -5,7 +5,6 @@
 import os
 import re
 import sys
-import datetime as dt
 
 from PyQt5.QtWidgets import ( QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit)
@@ -344,7 +343,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             y_values = text_box.text().split()
             for y in y_values:
                 R.add((i, int(y)))
-                R = set()
         
         # V 
         V = {}
@@ -352,7 +350,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             V[prop] = set()
             worlds = text_box.text().split()
             for world in worlds:
-                V[prop].add(world)
+                V[prop].add(int(world))
         
         # Create JSON file
         selected_methods = []

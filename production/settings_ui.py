@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Settings(object):
     def setupUi(self, Settings):
         Settings.setObjectName("Settings")
-        Settings.resize(532, 594)
+        Settings.resize(532, 525)
         self.centralwidget = QtWidgets.QWidget(Settings)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.centralwidget)
@@ -117,7 +117,7 @@ class Ui_Settings(object):
         self.modal_scrollArea.setWidgetResizable(True)
         self.modal_scrollArea.setObjectName("modal_scrollArea")
         self.modal_scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.modal_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, -138, 280, 549))
+        self.modal_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 280, 549))
         self.modal_scrollAreaWidgetContents.setObjectName("modal_scrollAreaWidgetContents")
         self.gridLayout_11 = QtWidgets.QGridLayout(self.modal_scrollAreaWidgetContents)
         self.gridLayout_11.setObjectName("gridLayout_11")
@@ -348,7 +348,7 @@ class Ui_Settings(object):
         Settings.setStatusBar(self.statusbar)
 
         self.retranslateUi(Settings)
-        self.query_stackedWidget.setCurrentIndex(1)
+        self.query_stackedWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(Settings)
 
     def retranslateUi(self, Settings):
