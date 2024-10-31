@@ -7,8 +7,13 @@ import re
 import sys
 
 from PyQt5.QtWidgets import ( QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
-                             QLabel, QLineEdit)
+                             QLabel, QLineEdit, QTabWidget)
 from PyQt5.QtCore import QThread, pyqtSignal
+
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import networkx as nx
 
 # Programs
 import closures
@@ -17,7 +22,6 @@ import mequivalence
 import pmorphism
 
 from settings_ui import Ui_Settings
-
 
 
 '''
@@ -38,9 +42,8 @@ def execute_methods(setup, program):
         method_name = method["name"]
         params = [parameters[param] for param in method["params"]]
         try:
-            # Dynamically call the method from control module with the parameters
             result = getattr(program, method_name)(*params)
-            results.append((method_name, result))  # Append tuple of (method_name, result)
+            results.append((method_name, result))  
         except AttributeError:
             results.append((method_name, f"Method {method_name} not found in control module."))
         except Exception as e:
@@ -58,6 +61,8 @@ def execute_methods(setup, program):
 class RunMethods(QThread):
     success = pyqtSignal(object, object, object)
     fail = pyqtSignal(str)
+    active = pyqtSignal()
+    done = pyqtSignal()
     
     def __init__(self, program, setup, my_id):
         super().__init__()
@@ -66,12 +71,14 @@ class RunMethods(QThread):
         self.my_id = my_id
 
     def run(self):
-        #try:
-        results = execute_methods(self.setup, self.program)
-        self.success.emit(self.setup,results, self.my_id)
-        #except Exception as e:
-        #    self.fail.emit(str(e))
+        self.active.emit()
+        try:
+            results = execute_methods(self.setup, self.program)
+            self.success.emit(self.setup,results, self.my_id)
+        except Exception as e:
+            self.fail.emit(str(e))
 
+        self.done.emit()
 
 
 '''
@@ -82,7 +89,12 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         QMainWindow.__init__(self)
         Ui_Settings.__init__(self)
         self.setupUi(self)
-  
+
+        self.num_threads = 0
+
+        '''
+            For storing relations
+        '''
         self.R_closure_inputs = []
         self.R_quotient_inputs = []
         self.R_formula_inputs = []
@@ -93,7 +105,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         '''
             Connect Buttons
         '''
-        # Let's see if Andrew's code goes!
+        # toggling between windows
         self.query_comboBox.currentIndexChanged.connect(self.queryTypeChanged)
         self.queryTypeChanged(0)
 
@@ -103,6 +115,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.runClosures_pushButton.clicked.connect(self.run_closure_methods) 
         self.nClosure_spinBox.setMinimum(1)
         
+            # List to hold all created closure graph windows
+        self.graph_windows = []
+
         # formula
         self.nFormula_spinBox.valueChanged.connect(lambda value: self.nChanged(value, "formula"))
         self.nFormula_spinBox.setMinimum(1)
@@ -110,9 +125,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.arrow_pushButton.clicked.connect(lambda: self.appendFormula("arrow"))
         self.diamond_pushButton.clicked.connect(lambda: self.appendFormula("diamond"))
         self.false_pushButton.clicked.connect(lambda: self.appendFormula("false"))
-
         self.formula_lineEdit.textChanged.connect(self.check_formula_for_params)
-
         self.runFormula_pushButton.clicked.connect(self.run_formula_methods) 
 
 
@@ -131,13 +144,47 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.mEquivN_spinBox.setMinimum(1)
         self.k_spinBox.setMinimum(1)
         self.runMEquiv_pushButton.clicked.connect(self.run_pMorph_methods)
+  
 
+    '''
+        Lock buttons if threads running
+    '''
+    def startThread(self):
+        self.num_threads +=1
         
-        
+        self.runQuotient_pushButton.setEnabled(False)
+        self.runClosures_pushButton.setEnabled(False)
+        self.runFormula_pushButton.setEnabled(False)
+        self.runMEquiv_pushButton.setEnabled(False)
+
+    '''
+        Unlock buttons if no threads running
+    '''
+    def removeThread(self):
+        self.num_threads -=1
+        if self.num_threads == 0:
+            self.runQuotient_pushButton.setEnabled(True)
+            self.runClosures_pushButton.setEnabled(True)
+            self.runFormula_pushButton.setEnabled(True)
+            self.runMEquiv_pushButton.setEnabled(True)
+
+
+
+
+    '''
+        Toggle between windows
+        Input: 
+            index: index window to toggle to
+    '''  
     def queryTypeChanged(self, index):
         self.query_stackedWidget.setCurrentIndex(index)
 
     
+    '''
+        Append symbol to self.formula_lineEdit after cursor
+        Input: 
+            symbol: id of symbol to write
+    '''  
     def appendFormula(self, symbol):
         # Get the current text and cursor position in the line edit
         current_text = self.formula_lineEdit.text()
@@ -162,6 +209,10 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.formula_lineEdit.setFocus()
 
 
+    '''
+        Get values from GUI and start thread to run pmorphism  
+        and m-equivalence methods
+    '''
     def run_pMorph_methods(self):
         #Let me get some of them variables!
         n = self.mEquivN_spinBox.value()
@@ -181,7 +232,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                 S.add((i, int(y)))
     
         
-        #Let me create this json, I guess!
         selected_methods = []
         if self.pmorphic_radioButton.isChecked():
             selected_methods.append({"name": "call_check_p_morphism", "params": ["F", "G"]})
@@ -207,9 +257,15 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         
         self.pMorph = RunMethods(program=mequivalence, setup=mysetup, my_id="mEquiv")
         self.pMorph.success.connect(self.writeOutput)  
-        self.pMorph.fail.connect(self.taskFailed) 
+        self.pMorph.fail.connect(self.writeToLog)
+        self.pMorph.active.connect(self.startThread)  
+        self.pMorph.done.connect(self.removeThread)  
         self.pMorph.start()
 
+
+    '''
+        Get values from GUI and start thread to run quotient methods
+    '''
     def run_quotient_methods(self):
         # Get variables
         xn = set(range(self.nQuotient_spinBox.value()))
@@ -228,7 +284,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                 V.add(frozenset(worlds))  # Use frozenset if the inner sets should be immutable
 
         selected_methods = []
-
         if self.vClosure_checkBox.isChecked():
             selected_methods.append({"name": "call_compute_closure", "params": ["V", "R", "X"]})
         if self.quotient_checkBox.isChecked():
@@ -245,15 +300,14 @@ class MyMainWindow(QMainWindow, Ui_Settings):
 
         self.quotient = RunMethods(program=mequivalence, setup=mysetup, my_id="quotient")
         self.quotient.success.connect(self.writeOutput)  
-        self.quotient.fail.connect(self.taskFailed) 
+        self.quotient.fail.connect(self.writeToLog) 
+        self.quotient.active.connect(self.startThread)  
+        self.quotient.done.connect(self.removeThread)  
         self.quotient.start()
 
-       
-     
-        
-       
-
-   
+    '''
+        Get values from GUI and start thread to run closure methods
+    '''
     def run_closure_methods(self):
         
         # Get variables
@@ -266,8 +320,6 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             for y in y_values:
                 R.add((i, int(y)))
         
-
-        # Create JSON
         selected_methods = []
         if self.reflex_checkBox.isChecked():
             selected_methods.append({"name": "reflexive_closure", "params": ["n", "R"]})
@@ -294,44 +346,15 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Thread to execute methods
         self.closure = RunMethods(program=closures, setup= mysetup, my_id="closure")
         self.closure.success.connect(self.writeOutput)  
-        self.closure.fail.connect(self.taskFailed) 
+        self.closure.fail.connect(self.writeToLog) 
+        self.closure.active.connect(self.startThread)  
+        self.closure.done.connect(self.removeThread)  
         self.closure.start()
 
 
-    def writeOutput(self, setup, results, my_id):
-        # Define the output file name based on the type
-
-        self.writeToLog(f"**** {my_id.upper() } ****")
-        output_dir = "output"
-        file = get_data_file_path(f"{output_dir}/{my_id}_output.txt")
-        os.makedirs(output_dir, exist_ok=True)
-
-
-        with open(file, 'a') as f:
-            # Write the parameters from the setup
-            f.write("\nParameters:\n")
-            for param, value in setup["parameters"].items():
-                f.write(f"{param}: {value}\n")
-            
-            # Write the results from the methods
-            f.write("\nResults:\n")
-            for method_name, result in results:
-                f.write(f"{method_name}:\n{result}\n")
-                self.writeToLog(f"{method_name}:\n{result}")
-
-                
-
-            f.write("****************************************************************\n\n")
-        
-        self.writeToLog(f"Wrote {my_id} output to {file}\n")
-
-
-   
-    def taskFailed(self, e):
-        self.writeToLog(f"{e}")
-
-
-
+    '''
+        Get values from GUI and start thread to run formula methods
+    '''
     def run_formula_methods(self):
         
         # Get variables
@@ -374,8 +397,55 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Thread to execute methods
         self.formula = RunMethods(program=modalFormula, setup= mysetup, my_id="formula")
         self.formula.success.connect(self.writeOutput)  
-        self.formula.fail.connect(self.taskFailed) 
+        self.formula.fail.connect(self.writeToLog) 
+        self.formula.active.connect(self.startThread)  
+        self.formula.done.connect(self.removeThread)  
         self.formula.start()
+
+    '''
+        Write the results of the methods to {my_id}_output.txt 
+        and generate a graph to display the closure method results.
+        
+        Input:
+            setup: dictionary of method names and parameters
+            results: dictionary of method names and return values
+            my_id: id for the tab calling the methods
+    '''
+    def writeOutput(self, setup, results, my_id):
+
+        # Define the output file name based on the type
+        self.writeToLog(f"**** {my_id.upper() } ****")
+        output_dir = "output"
+        file = get_data_file_path(f"{output_dir}/{my_id}_output.txt")
+        os.makedirs(output_dir, exist_ok=True)
+
+
+        with open(file, 'a') as f:
+            # Write the parameters from the setup
+            f.write("\nParameters:\n")
+            for param, value in setup["parameters"].items():
+                f.write(f"{param}: {value}\n")
+            
+            # Write the results from the methods
+            f.write("\nResults:\n")
+            for method_name, result in results:
+                f.write(f"{method_name}:\n{result}\n")
+                self.writeToLog(f"{method_name}:\n{result}")
+
+            # create graphs if type is closure
+            if my_id == "closure":
+                self.graph_window = GraphWindow()
+                self.graph_window.show()
+
+                self.graph_window.add_graph(setup["parameters"]["R"], "R") 
+                for method_name, result in results: 
+                    if method_name not in {"find_connected_components", "find_subframe"}:
+                        self.graph_window.add_graph(result, method_name)            
+
+            f.write("****************************************************************\n\n")
+    
+        self.writeToLog(f"Wrote {my_id} output to {file}\n")
+
 
     '''
         Constructs V by creating a label for each unique propositions in formula_lineEdit,  
@@ -422,6 +492,10 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Set the content widget with the new layout to the scroll area
         scrollArea.setWidget(content_widget)
 
+
+    '''
+        Append a new lineEdit to self.VQuotient_scrollArea 
+    '''
     def add_V(self):
         layout = self.VQuotient_scrollArea.widget().layout()
         
@@ -448,7 +522,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.V_counter += 1
         
 
-
+    '''
+        Remove the last lineEdit from self.VQuotient_scrollArea 
+    '''
     def remove_V(self):
         layout = self.VQuotient_scrollArea.widget().layout()
         
@@ -482,9 +558,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
     '''
         Constructs R from N, where each label is a node 0, ... n-1
         and the line edit can be filled with  a list of relations
-     
     '''
-
     def nChanged(self, n, type):
         # Generate the formatted numbers for display
         numbers = [str(num) for num in range(n)]
@@ -552,12 +626,10 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         
         # Set the content widget with the new layout to the scroll area
         scrollArea.setWidget(content_widget)
-
-
-        
+  
 
     '''
-        Displays messages and the time they were sent to the settings log
+        Displays messages to the settings log
         
         Parameters:
             message - text to display
@@ -573,7 +645,76 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         QApplication.processEvents()
 
 
-   
+    """
+        Lock buttons
+    """
+    def lock_buttons(self):
+        self.runQuotient_pushButton.setEnabled(False)
+        self.runClosures_pushButton.setEnabled(False)
+        self.runFormula_pushButton.setEnabled(False)
+        self.runMEquiv_pushButton.setEnabled(False)
+
+    
+    """
+        Unlock buttons
+    """
+    def unlock_buttons(self):
+        self.runQuotient_pushButton.setEnabled(True)
+        self.runClosures_pushButton.setEnabled(True)
+        self.runFormula_pushButton.setEnabled(True)
+        self.runMEquiv_pushButton.setEnabled(True)
+
+
+'''
+    Manages the creation of the graph window
+'''
+class GraphWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Closure Graphs")
+        self.setMinimumSize(400, 300)
+
+        # Tab widget to hold multiple graphs
+        self.tab_widget = QTabWidget()
+        
+        # Layout for the main window
+        layout = QVBoxLayout()
+        layout.addWidget(self.tab_widget)
+
+        label = QLabel("Red is irreflexive, Blue is reflexive")
+        layout.addWidget(label)
+
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+    def add_graph(self, R, title):
+        # Create the figure for the graph
+        figure = create_graph(R)
+        canvas = FigureCanvas(figure)
+
+        # Add a new tab for the graph
+        self.tab_widget.addTab(canvas, title)
+        
+    
+'''
+    Creates figure from the relations
+'''
+def create_graph(R):
+    # Create directed graph from edges in R
+    graph_R = nx.DiGraph()
+    for (x, y) in R:
+        graph_R.add_edge(x, y)
+
+    # 3D positions
+    pos_R = nx.spring_layout(graph_R, dim=3)
+
+    # Create the figure and 3D plot
+    fig = Figure(figsize=(8, 6))
+    ax1 = fig.add_subplot(111, projection='3d')
+    closures.visualize_3d(graph_R, pos_R, ax1)
+    
+    return fig
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

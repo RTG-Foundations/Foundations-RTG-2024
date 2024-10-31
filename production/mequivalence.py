@@ -404,6 +404,10 @@ def print_mEquiv(F,G,m, result):
     print(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
     print(f"{m}-Equivalent? {result}\n")
 
+
+'''
+    Calls pmorphism methods and returns result in nice format
+'''
 def call_check_p_morphism(F, G):
     f = pmorphism.check_p_morphism(F, G)
     return pmorphism.printIsPMorph(F,G, f)

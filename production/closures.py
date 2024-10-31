@@ -2,15 +2,16 @@
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-
 from collections import deque
 
 
 ''' 
     Displays 3D graph. Modified to work with matplotlib
 '''
-def visualize_3d(graph, positions, title, ax):
-    ax.set_title(title)
+def visualize_3d(graph, positions, ax, title=None):
+    if title != None:
+        ax.set_title(title)
+
     color_refl = 'blue'
     color_irr = 'red'
     color_edge = 'blue'
@@ -70,11 +71,11 @@ def getRelation(n, M):
             
 
 '''
-Exercise 2.2
-Input: a positive integer n; a relation R on Xn
-Output: the smallest relation R'
-that contains R and is reflexive (such a relation is
-called the reflexive closure of R).
+    Exercise 2.2
+    Input: a positive integer n; a relation R on Xn
+    Output: the smallest relation R'
+    that contains R and is reflexive (such a relation is
+    called the reflexive closure of R).
 '''
 def reflexive_closure(n, R):
     M = getMatrix(n,R)
@@ -88,11 +89,11 @@ def reflexive_closure(n, R):
 
 
 '''
-Exercise 2.3
-Input: a positive integer n; a relation R on Xn
-Output: the smallest relation R'
-that contains R and is symmetric (such a relation
-is called the symmetric closure of R).
+    Exercise 2.3
+    Input: a positive integer n; a relation R on Xn
+    Output: the smallest relation R'
+    that contains R and is symmetric (such a relation
+    is called the symmetric closure of R).
 '''
 def symmetric_closure(n, R):
 
@@ -109,12 +110,12 @@ def symmetric_closure(n, R):
 
 
 '''
-Floyd-Warshall algorithm for finding transitive closure
+    Floyd-Warshall algorithm for finding transitive closure
 
-Input: a positive integer n; a relation R on Xn
-Output: the transitive closure of R.
+    Input: a positive integer n; a relation R on Xn
+    Output: the transitive closure of R.
 
-https://www.geeksforgeeks.org/transitive-closure-of-a-graph/
+    https://www.geeksforgeeks.org/transitive-closure-of-a-graph/
 '''
 def floyd_transitive_closure(n, R):
 
@@ -137,10 +138,10 @@ def floyd_transitive_closure(n, R):
 
 
 '''
-Exercise 2.5
-Calculates the transitive closure as M U M^2 U M^4 U ...
-Input: a positive integer n; a relation R on Xn
-Output: the transitive closure of R.
+    Exercise 2.5
+    Calculates the transitive closure as M U M^2 U M^4 U ...
+    Input: a positive integer n; a relation R on Xn
+    Output: the transitive closure of R.
 
 '''
 import numpy as np
@@ -240,6 +241,7 @@ def find_subframe(n,l, R):
     return subframe
 
 
+
 def main():
 
    
@@ -259,7 +261,6 @@ def main():
 
     R_trans = transitive_closure(n, R)
     print(f"Transitive closure of R: {R_trans}\n")
-
    
     # Reflexive test
     R_reflex = reflexive_closure(n, R)
@@ -292,7 +293,7 @@ def main():
     '''
         Create graph for reflexive, symmetric, transitive closures
     '''
-    
+  
     graph_R = nx.DiGraph()
     for (x, y) in R:
         graph_R.add_edge(x, y)
@@ -309,8 +310,7 @@ def main():
     for (x, y) in R_trans:
         graph_transitive.add_edge(x, y)
 
-   
-    # 3D positions
+
     pos_R = nx.spring_layout(graph_R, dim=3)
     pos_reflexive = nx.spring_layout(graph_reflexive, dim=3)
     pos_symmetric = nx.spring_layout(graph_symmetric, dim=3)
@@ -320,20 +320,20 @@ def main():
     fig = plt.figure(figsize=(24, 18))  
 
     ax1 = fig.add_subplot(221, projection='3d')
-    visualize_3d(graph_R, pos_R, "R", ax1)
+    visualize_3d(graph_R, pos_R,  ax1, "R")
 
     ax2 = fig.add_subplot(222, projection='3d')
-    visualize_3d(graph_reflexive, pos_reflexive, "Reflexive Closure of R", ax2)
+    visualize_3d(graph_reflexive, pos_reflexive, ax2, "Reflexive Closure of R")
 
     ax3 = fig.add_subplot(223, projection='3d')
-    visualize_3d(graph_symmetric, pos_symmetric, "Symmetric Closure of R", ax3)
+    visualize_3d(graph_symmetric, pos_symmetric, ax3, "Symmetric Closure of R")
 
     ax4 = fig.add_subplot(224, projection='3d')
-    visualize_3d(graph_transitive, pos_transitive, "Transitive Closure of R", ax4)
+    visualize_3d(graph_transitive, pos_transitive, ax4, "Transitive Closure of R")
 
     plt.suptitle("Red = irreflexive, Blue = reflexive")
     plt.show()
-    
+
     
 
 if __name__ == "__main__":

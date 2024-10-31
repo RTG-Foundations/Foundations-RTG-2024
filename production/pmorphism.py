@@ -155,10 +155,8 @@ def check_p_morphism(F, G):
 '''
 def printIsPMorph(F,G, f):
     result = []
-    '''
     result.append(f"F(X1, R1): X1 = {F.points}, R1 = {F.relation}")
     result.append(f"G(X2, R2): X2 = {G.points}, R2 = {G.relation}")
-    '''
     if f is None:
         result.append("G is NOT a p-morphic image of F")
     else:
