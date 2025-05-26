@@ -9,7 +9,7 @@ import sys
 from PyQt5.QtWidgets import ( QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QTabWidget)
 from PyQt5.QtCore import QThread, pyqtSignal
-
+from PyQt5.QtGui import QIcon
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -27,10 +27,11 @@ from settings_ui import Ui_Settings
 '''
     Loads and runs the JSON file
 '''
-# Get absolute path to program's data directory
 def get_data_file_path(filename):
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, filename)
+    home_dir = os.path.expanduser("~")
+    output_dir = os.path.join(home_dir, "finiteStructures_output")
+    os.makedirs(output_dir, exist_ok=True)
+    return os.path.join(output_dir, filename)
 
 # Execute methods based on setup file
 def execute_methods(setup, program):
@@ -416,7 +417,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         # Define the output file name based on the type
         self.writeToLog(f"**** {my_id.upper() } ****")
         output_dir = "output"
-        file = get_data_file_path(f"{output_dir}/{my_id}_output.txt")
+        file = get_data_file_path(f"{my_id}_output.txt")
         os.makedirs(output_dir, exist_ok=True)
 
 
@@ -664,6 +665,11 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         self.runFormula_pushButton.setEnabled(True)
         self.runMEquiv_pushButton.setEnabled(True)
 
+    '''
+        Quits the entire application when the main window is closed.
+    '''
+    def closeEvent(self, event):
+        QApplication.quit()
 
 '''
     Manages the creation of the graph window
@@ -718,6 +724,8 @@ def create_graph(R):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    icon_path = os.path.join(getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))), "icon.svg")
+    app.setWindowIcon(QIcon(icon_path))
     window = MyMainWindow()
     window.show()
     sys.exit(app.exec_())
