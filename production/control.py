@@ -724,7 +724,7 @@ def create_graph(R):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    icon_path = os.path.join(getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))), "icon.svg")
+    icon_path = os.path.join(getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))), "icon.ico")
     app.setWindowIcon(QIcon(icon_path))
     window = MyMainWindow()
     window.show()
