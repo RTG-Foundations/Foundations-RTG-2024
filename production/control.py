@@ -25,7 +25,7 @@ from settings_ui import Ui_Settings
 
 
 '''
-    Loads and runs the JSON file
+    Gets data output path
 '''
 def get_data_file_path(filename):
     home_dir = os.path.expanduser("~")
@@ -215,193 +215,254 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         and m-equivalence methods
     '''
     def run_pMorph_methods(self):
-        #Let me get some of them variables!
-        n = self.mEquivN_spinBox.value()
-        k = self.k_spinBox.value()
-        m = self.m_spinBox.value()
+        try:
+            #Let me get some of them variables!
+            n = self.mEquivN_spinBox.value()
+            k = self.k_spinBox.value()
+            m = self.m_spinBox.value()
 
-        R = set()
-        for i, (label, text_box) in enumerate(self.R_pMorph_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                R.add((i, int(y)))
-        
-        S = set()
-        for i, (label, text_box) in enumerate(self.S_pMorph_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                S.add((i, int(y)))
+            R = set()
+            for i, (label, text_box) in enumerate(self.R_pMorph_inputs):
+                y_values = text_box.text().split()
+                for y in y_values:
+                    try:
+                        y_int = int(y)
+                    except ValueError as e:
+                        raise ValueError(f"Error in R at row {i}. R must be spaced seperated integers between 0 and {n-1}")
+                    if y_int < 0 or y_int >= n:
+                        raise ValueError(f"R contains invalid value {y_int} (must be between 0 and {n-1})")
+                    R.add((i, y_int))
+                    
+            
+            S = set()
+            for i, (label, text_box) in enumerate(self.S_pMorph_inputs):
+                y_values = text_box.text().split()
+                for y in y_values:
+                    try:
+                        y_int = int(y)
+                    except ValueError as e:
+                        raise ValueError(f"Error in S at row {i}. S must be spaced seperated integers between 0 and {k-1}")
+                    if y_int < 0 or y_int >= k:
+                        raise ValueError(f"S contains invalid value {y_int} (must be between 0 and {k-1})")
+                    S.add((i, y_int))
     
         
-        selected_methods = []
-        if self.pmorphic_radioButton.isChecked():
-            selected_methods.append({"name": "call_check_p_morphism", "params": ["F", "G"]})
-        if self.log_radioButton.isChecked():
-            selected_methods.append({"name": "call_log_equal", "params": ["F", "G"]})
-        if self.mEquiv_radioButton.isChecked():
-            selected_methods.append({"name": "mEquiv", "params": ["F", "G", "m"]})
+            selected_methods = []
+            if self.pmorphic_radioButton.isChecked():
+                selected_methods.append({"name": "call_check_p_morphism", "params": ["F", "G"]})
+            if self.log_radioButton.isChecked():
+                selected_methods.append({"name": "call_log_equal", "params": ["F", "G"]})
+            if self.mEquiv_radioButton.isChecked():
+                selected_methods.append({"name": "mEquiv", "params": ["F", "G", "m"]})
 
-        points_F = list(range(n))
-        points_G = list(range(k))
-    
-        F = pmorphism.Frame(points=points_F, relation=R)
-        G = pmorphism.Frame(points=points_G, relation=S)
-        mysetup = {
-        "parameters":
-            {
-                "F": F,
-                "G": G,
-                "m": m
-            },
-            "methods": selected_methods
-        }
+            points_F = list(range(n))
+            points_G = list(range(k))
         
-        self.pMorph = RunMethods(program=mequivalence, setup=mysetup, my_id="mEquiv")
-        self.pMorph.success.connect(self.writeOutput)  
-        self.pMorph.fail.connect(self.writeToLog)
-        self.pMorph.active.connect(self.startThread)  
-        self.pMorph.done.connect(self.removeThread)  
-        self.pMorph.start()
-
+            F = pmorphism.Frame(points=points_F, relation=R)
+            G = pmorphism.Frame(points=points_G, relation=S)
+            mysetup = {
+            "parameters":
+                {
+                    "F": F,
+                    "G": G,
+                    "m": m
+                },
+                "methods": selected_methods
+            }
+            
+            self.pMorph = RunMethods(program=mequivalence, setup=mysetup, my_id="mEquiv")
+            self.pMorph.success.connect(self.writeOutput)  
+            self.pMorph.fail.connect(self.writeToLog)
+            self.pMorph.active.connect(self.startThread)  
+            self.pMorph.done.connect(self.removeThread)  
+            self.pMorph.start()
+        except Exception as e:
+            self.writeToLog(f"Bad input: {e}")
 
     '''
         Get values from GUI and start thread to run quotient methods
     '''
     def run_quotient_methods(self):
-        # Get variables
-        xn = set(range(self.nQuotient_spinBox.value()))
+        try:
+            # Get variables
+            n = self.nQuotient_spinBox.value()
+            xn = set(range(n))
 
-        R = set()
-        for i, (label, text_box) in enumerate(self.R_quotient_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                R.add((i, int(y)))
+            R = set()
+            for i, (label, text_box) in enumerate(self.R_quotient_inputs):
+                y_values = text_box.text().split()
+                for y in y_values:
+                    try:
+                        y_int = int(y)
+                    except ValueError as e:
+                        raise ValueError(f"Error in R at row {i}. R must be spaced seperated integers between 0 and {n-1}")
+                    if y_int < 0 or y_int >= n:
+                        raise ValueError(f"R contains invalid value {y_int} (must be between 0 and {n-1})")
+                    R.add((i, y_int))
+                    
+            V = set()
+            for line_edit in self.VQuotient_scrollArea.findChildren(QLineEdit):
+                text = line_edit.text()
+                if text:
+                    try:
+                        worlds = set(map(int, text.split()))
+                    except ValueError as e:
+                        raise ValueError(f"V must be spaced seperated integers between 0 and {n-1}")
+                    
+                    for world in worlds:
+                        if world < 0 or world >= n:
+                            raise ValueError(f"V contains invalid point {world} (must be between 0 and {n-1})")
 
-        V = set()
-        for line_edit in self.VQuotient_scrollArea.findChildren(QLineEdit):
-            text = line_edit.text()
-            if text:
-                worlds = set(map(int, text.split()))
-                V.add(frozenset(worlds))  # Use frozenset if the inner sets should be immutable
+                    V.add(frozenset(worlds))  # Use frozenset if the inner sets should be immutable
 
-        selected_methods = []
-        if self.vClosure_checkBox.isChecked():
-            selected_methods.append({"name": "call_compute_closure", "params": ["V", "R", "X"]})
-        if self.quotient_checkBox.isChecked():
-            selected_methods.append({"name": "call_compute_quotient_frame", "params": ["X", "R", "V"]})
+            selected_methods = []
+            if self.vClosure_checkBox.isChecked():
+                selected_methods.append({"name": "call_compute_closure", "params": ["V", "R", "X"]})
+            if self.quotient_checkBox.isChecked():
+                selected_methods.append({"name": "call_compute_quotient_frame", "params": ["X", "R", "V"]})
 
-        mysetup = {
-            "parameters": {
-                "V": V,
-                "R": R,
-                "X": xn
-            },
-            "methods": selected_methods
-        }
+            mysetup = {
+                "parameters": {
+                    "V": V,
+                    "R": R,
+                    "X": xn
+                },
+                "methods": selected_methods
+            }
 
-        self.quotient = RunMethods(program=mequivalence, setup=mysetup, my_id="quotient")
-        self.quotient.success.connect(self.writeOutput)  
-        self.quotient.fail.connect(self.writeToLog) 
-        self.quotient.active.connect(self.startThread)  
-        self.quotient.done.connect(self.removeThread)  
-        self.quotient.start()
+            self.quotient = RunMethods(program=mequivalence, setup=mysetup, my_id="quotient")
+            self.quotient.success.connect(self.writeOutput)  
+            self.quotient.fail.connect(self.writeToLog) 
+            self.quotient.active.connect(self.startThread)  
+            self.quotient.done.connect(self.removeThread)  
+            self.quotient.start()
+        except Exception as e:
+            self.writeToLog(f"Bad input: {e}")
 
     '''
         Get values from GUI and start thread to run closure methods
     '''
     def run_closure_methods(self):
-        
-        # Get variables
-        n = self.nClosure_spinBox.value()
-        l = self.l_spinBox.value()
-        
-        R = set()
-        for i, (label, text_box) in enumerate(self.R_closure_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                R.add((i, int(y)))
-        
-        selected_methods = []
-        if self.reflex_checkBox.isChecked():
-            selected_methods.append({"name": "reflexive_closure", "params": ["n", "R"]})
-        if self.sym_checkBox.isChecked():
-            selected_methods.append({"name": "symmetric_closure", "params": ["n", "R"]})
-        if self.transFloyd_checkBox.isChecked():
-            selected_methods.append({"name": "floyd_transitive_closure", "params": ["n", "R"]})
-        if self.transDot_checkBox.isChecked():
-            selected_methods.append({"name": "transitive_closure", "params": ["n", "R"]})
-        if self.connected_checkBox.isChecked():
-            selected_methods.append({"name": "find_connected_components", "params": ["n", "R"]})
-        if self.subframe_checkBox.isChecked():
-            selected_methods.append({"name": "find_subframe", "params": ["n", "l", "R"]})
-        
-        mysetup = {
-            "parameters": {
-                "n": n,
-                "R": R,
-                "l": l
-            },
-            "methods": selected_methods
-        }
-        
-        # Thread to execute methods
-        self.closure = RunMethods(program=closures, setup= mysetup, my_id="closure")
-        self.closure.success.connect(self.writeOutput)  
-        self.closure.fail.connect(self.writeToLog) 
-        self.closure.active.connect(self.startThread)  
-        self.closure.done.connect(self.removeThread)  
-        self.closure.start()
+        try:
+            # Get variables
+            n = self.nClosure_spinBox.value()
+            l = self.l_spinBox.value()
+            
+            R = set()
+            for i, (label, text_box) in enumerate(self.R_closure_inputs):
+                y_values = text_box.text().split()
+                for y in y_values:
+                    try:
+                        y_int = int(y)
+                    except ValueError as e:
+                        raise ValueError(f"Error in R at row {i}. R must be spaced seperated integers between 0 and {n-1}")
+                    if y_int < 0 or y_int >= n:
+                        raise ValueError(f"R contains invalid value {y_int} (must be between 0 and {n-1})")
+                    R.add((i, y_int))
+            
+            selected_methods = []
+            if self.reflex_checkBox.isChecked():
+                selected_methods.append({"name": "reflexive_closure", "params": ["n", "R"]})
+            if self.sym_checkBox.isChecked():
+                selected_methods.append({"name": "symmetric_closure", "params": ["n", "R"]})
+            if self.transFloyd_checkBox.isChecked():
+                selected_methods.append({"name": "floyd_transitive_closure", "params": ["n", "R"]})
+            if self.transDot_checkBox.isChecked():
+                selected_methods.append({"name": "transitive_closure", "params": ["n", "R"]})
+            if self.connected_checkBox.isChecked():
+                selected_methods.append({"name": "find_connected_components", "params": ["n", "R"]})
+            if self.subframe_checkBox.isChecked():
+                selected_methods.append({"name": "find_subframe", "params": ["n", "l", "R"]})
+            
+            mysetup = {
+                "parameters": {
+                    "n": n,
+                    "R": R,
+                    "l": l
+                },
+                "methods": selected_methods
+            }
+            
+            # Thread to execute methods
+            self.closure = RunMethods(program=closures, setup= mysetup, my_id="closure")
+            self.closure.success.connect(self.writeOutput)  
+            self.closure.fail.connect(self.writeToLog) 
+            self.closure.active.connect(self.startThread)  
+            self.closure.done.connect(self.removeThread)  
+            self.closure.start()
+        except Exception as e:
+            self.writeToLog(f"Bad input: {e}")
 
 
     '''
         Get values from GUI and start thread to run formula methods
     '''
     def run_formula_methods(self):
+        try:
+            # Get variables
+            phi = self.formula_lineEdit.text()
+            if not phi:
+                raise ValueError("Formula cannot be empty")
         
-        # Get variables
-        phi = self.formula_lineEdit.text()
-        n = self.nFormula_spinBox.value()
-        # R 
-        R = set()
-        for i, (label, text_box) in enumerate(self.R_formula_inputs):
-            y_values = text_box.text().split()
-            for y in y_values:
-                R.add((i, int(y)))
-        
-        # V 
-        V = {}
-        for prop, text_box in self.V_formula_inputs.items():
-            V[prop] = set()
-            worlds = text_box.text().split()
-            for world in worlds:
-                V[prop].add(int(world))
-        
-        # Create JSON file
-        selected_methods = []
-        if self.subformulas_radioButton.isChecked():
-            selected_methods.append({"name": "find_subformulas", "params": ["phi"]})
-        if self.sValid_radioButton.isChecked():
-            selected_methods.append({"name": "is_formula_valid_in_model", "params": ["phi", "n", "R"]})
-        if self.findX_radioButton.isChecked():
-            selected_methods.append({"name": "get_satisfying_points_ast", "params": ["phi", "n", "R", "V"]})
+            n = self.nFormula_spinBox.value()
+            
+            # R 
+            R = set()
+            for i, (label, text_box) in enumerate(self.R_formula_inputs):
+                y_values = text_box.text().split()
+                for y in y_values:
+                    try:
+                        y_int = int(y)
+                    except ValueError as e:
+                        raise ValueError(f"Error in R at row {i}. R must be spaced seperated integers between 0 and {n-1}")
+                    if y_int < 0 or y_int >= n:
+                        raise ValueError(f"R contains invalid value {y_int} (must be between 0 and {n-1})")
+                    R.add((i, y_int))
 
-        mysetup = {
-            "parameters": {
-                "phi": phi,
-                "n": n,
-                "R": R,
-                "V": V
-            },
-            "methods": selected_methods
-        }
-        
-        # Thread to execute methods
-        self.formula = RunMethods(program=modalFormula, setup= mysetup, my_id="formula")
-        self.formula.success.connect(self.writeOutput)  
-        self.formula.fail.connect(self.writeToLog) 
-        self.formula.active.connect(self.startThread)  
-        self.formula.done.connect(self.removeThread)  
-        self.formula.start()
+            
+            # V 
+            V = {}
+            for prop, text_box in self.V_formula_inputs.items():
+                V[prop] = set()
+                worlds = text_box.text().split()
+                for world in worlds:
+                    try:
+                        world_int = int(world)
+                    except ValueError as e:
+                        raise ValueError(f"V contains invalid point {world} for property {prop} (must be integers between 0 and {n-1})")
+
+                    if world_int < 0 or world_int >= n:
+                        raise ValueError(f"Invalid input in V for property {prop} (must be spaced seperated integers between 0 and {n-1})")
+                    V[prop].add(world_int)
+
+            # Create JSON file
+            selected_methods = []
+            if self.subformulas_radioButton.isChecked():
+                selected_methods.append({"name": "find_subformulas", "params": ["phi"]})
+            if self.sValid_radioButton.isChecked():
+                selected_methods.append({"name": "is_formula_valid_in_model", "params": ["phi", "n", "R"]})
+            if self.findX_radioButton.isChecked():
+                selected_methods.append({"name": "get_satisfying_points_ast", "params": ["phi", "n", "R", "V"]})
+
+            mysetup = {
+                "parameters": {
+                    "phi": phi,
+                    "n": n,
+                    "R": R,
+                    "V": V
+                },
+                "methods": selected_methods
+            }
+            
+            # Thread to execute methods
+            self.formula = RunMethods(program=modalFormula, setup= mysetup, my_id="formula")
+            self.formula.success.connect(self.writeOutput)  
+            self.formula.fail.connect(self.writeToLog) 
+            self.formula.active.connect(self.startThread)  
+            self.formula.done.connect(self.removeThread)  
+            self.formula.start()
+        except Exception as e:
+            self.writeToLog(f"Bad input: {e}")
 
     '''
         Write the results of the methods to {my_id}_output.txt 
@@ -442,10 +503,10 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                 for method_name, result in results: 
                     if method_name not in {"find_connected_components", "find_subframe"}:
                         self.graph_window.add_graph(result, method_name)            
-
+                
             f.write("****************************************************************\n\n")
     
-        self.writeToLog(f"Wrote {my_id} output to {file}\n")
+        self.writeToLog(f"Wrote {my_id} output to {file}")
 
 
     '''
@@ -638,7 +699,7 @@ class MyMainWindow(QMainWindow, Ui_Settings):
     def writeToLog(self, message):
      
         # Append the message to the QTextBrowser
-        self.log_textBrowser.append(message)
+        self.log_textBrowser.append(message+ "\n")
         
         # Automatically scroll to the bottom
         self.log_textBrowser.ensureCursorVisible()
