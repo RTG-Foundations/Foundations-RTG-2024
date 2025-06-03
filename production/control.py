@@ -429,10 +429,10 @@ class MyMainWindow(QMainWindow, Ui_Settings):
                     try:
                         world_int = int(world)
                     except ValueError as e:
-                        raise ValueError(f"V contains invalid point {world} for property {prop} (must be integers between 0 and {n-1})")
+                        raise ValueError(f"V contains invalid point '{world}' for proposition  {prop} (must be integers between 0 and {n-1})")
 
                     if world_int < 0 or world_int >= n:
-                        raise ValueError(f"Invalid input in V for property {prop} (must be spaced seperated integers between 0 and {n-1})")
+                        raise ValueError(f"Invalid input in V for  proposition {prop} (must be spaced seperated integers between 0 and {n-1})")
                     V[prop].add(world_int)
 
             # Create JSON file
