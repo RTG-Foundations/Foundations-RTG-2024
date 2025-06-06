@@ -33,6 +33,17 @@ def get_data_file_path(filename):
     os.makedirs(output_dir, exist_ok=True)
     return os.path.join(output_dir, filename)
 
+'''
+    Checks if program is running in docker
+'''
+def running_in_docker():
+    path = '/proc/1/cgroup'
+    if os.path.exists(path):
+        with open(path) as f:
+            return 'docker' in f.read()
+    return False
+
+
 # Execute methods based on setup file
 def execute_methods(setup, program):
     parameters = setup["parameters"]
@@ -90,6 +101,9 @@ class MyMainWindow(QMainWindow, Ui_Settings):
         QMainWindow.__init__(self)
         Ui_Settings.__init__(self)
         self.setupUi(self)
+
+        # Check if running in Docker
+        self.in_docker = running_in_docker()  
 
         self.num_threads = 0
 
@@ -474,39 +488,48 @@ class MyMainWindow(QMainWindow, Ui_Settings):
             my_id: id for the tab calling the methods
     '''
     def writeOutput(self, setup, results, my_id):
-
+    
+        self.writeToLog(f"**** {my_id.upper()} ****")
+    
         # Define the output file name based on the type
-        self.writeToLog(f"**** {my_id.upper() } ****")
         output_dir = "output"
         file = get_data_file_path(f"{my_id}_output.txt")
         os.makedirs(output_dir, exist_ok=True)
 
-
-        with open(file, 'a') as f:
-            # Write the parameters from the setup
-            f.write("\nParameters:\n")
-            for param, value in setup["parameters"].items():
-                f.write(f"{param}: {value}\n")
-            
-            # Write the results from the methods
-            f.write("\nResults:\n")
-            for method_name, result in results:
-                f.write(f"{method_name}:\n{result}\n")
-                self.writeToLog(f"{method_name}:\n{result}")
-
-            # create graphs if type is closure
-            if my_id == "closure":
-                self.graph_window = GraphWindow()
-                self.graph_window.show()
-
-                self.graph_window.add_graph(setup["parameters"]["R"], "R") 
-                for method_name, result in results: 
-                    if method_name not in {"find_connected_components", "find_subframe"}:
-                        self.graph_window.add_graph(result, method_name)            
+        if not self.in_docker:
+            # Only write output file if not running in Docker
+            with open(file, 'a') as f:
+                # Write the parameters from the setup
+                f.write("\nParameters:\n")
+                for param, value in setup["parameters"].items():
+                    f.write(f"{param}: {value}\n")
                 
-            f.write("****************************************************************\n\n")
+                # Write the results from the methods
+                f.write("\nResults:\n")
+                for method_name, result in results:
+                    f.write(f"{method_name}:\n{result}\n")
+                
+                f.write("****************************************************************\n\n")
     
-        self.writeToLog(f"Wrote {my_id} output to {file}")
+        # Write to the log
+        for method_name, result in results:
+            self.writeToLog(f"{method_name}:\n{result}")
+
+        if not self.in_docker:
+            self.writeToLog(f"Wrote {my_id} output to {file}")
+          
+        
+        # create graphs if type is closure
+        if my_id == "closure":
+            self.graph_window = GraphWindow()
+            self.graph_window.show()
+
+            self.graph_window.add_graph(setup["parameters"]["R"], "R")
+            for method_name, result in results:
+                if method_name not in {"find_connected_components", "find_subframe"}:
+                    self.graph_window.add_graph(result, method_name)
+
+        
 
 
     '''
@@ -729,8 +752,13 @@ class MyMainWindow(QMainWindow, Ui_Settings):
     '''
         Quits the entire application when the main window is closed.
     '''
+    
     def closeEvent(self, event):
-        QApplication.quit()
+        if self.in_docker:
+            # Can't exit when in docker
+            event.ignore()
+        else:
+            QApplication.quit()
 
 '''
     Manages the creation of the graph window

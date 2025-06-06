@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  vncapp:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    command: /bin/bash /app/start.sh
+    security_opt:
+      - seccomp:unconfined
